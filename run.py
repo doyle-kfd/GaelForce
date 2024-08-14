@@ -40,8 +40,8 @@ def validate_master_data(master_data):
     I create a dataframe taking input from the marine_data_m2 masterdata.
     """
     print("Creating Dataframe")
-    df = pd.DataFrame(master_data)
-    print(df)
+    df = pd.DataFrame(master_data[1:], columns=master_data[0])
+    print(df.columns)
 
 
 def main():
