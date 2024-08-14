@@ -1,5 +1,6 @@
 import gspread
 import pandas as pd
+import numpy as np
 from google.oauth2.service_account import Credentials
 
 SCOPE = [
@@ -44,11 +45,28 @@ def validate_master_data(master_data):
     print(df)
  
     # check for missing values in master data
-    missing_values = df.isnull().sum()
+    missing_values_before = df.isnull().sum()
     print("Missing Values")
-    print(missing_values)
+    print(missing_values_before)
 
     print(df.isna().sum())
+
+    nan_free_df = df.applymap(lambda x: np.nan if isinstance(x, str) and x.strip().lower() == 'nan' else x)
+    print(nan_free_df.isna().sum())
+    print(df)
+
+    print(df.columns)
+    print("NAN FREE DF COLUUMNS START")
+    print(nan_free_df.columns)
+    print("NAN FREE DF COLUUMNS END")
+    print(nan_free_df.describe()[['time']])
+    cleaned_data = nan_free_df.dropna(axis=0, how='any')
+    print(cleaned_data.isna().sum())
+
+    
+
+
+    
     
     """
     # Remove rows with any missing values
