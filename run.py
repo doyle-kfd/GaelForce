@@ -33,7 +33,7 @@ def validate_master_data(master_data):
     This purpose of this function is to take the masterdata set and
     validate it for errors, based on:
     - Missing Values
-    - Duplicates
+    - Duplicate Rows
     - Outliers
     - Inconsistancy
     - Nan
@@ -41,7 +41,24 @@ def validate_master_data(master_data):
     """
     print("Creating Dataframe")
     df = pd.DataFrame(master_data[1:], columns=master_data[0])
-    print(df.columns)
+ 
+    # check for missing values in master data
+    missing_values = df.isnull().sum()
+    print("Missing Values")
+    print(missing_values)
+
+    # check for outliers
+    df = df.drop(columns=(['station_id', 'longitude', 'latitude', 'time', 'QC_Flag']))
+    print("Atmospheric Pressure Data")
+    print(df.describe()[['AtmosphericPressure']])
+    print("Wind Related Statistics")
+    print(df.describe()[['WindDirection', 'WindSpeed', 'Gust']])
+    print("Wave Related Statistics")
+    print(df.describe()[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']])
+    print("Temp Related Statistics")
+    print(df.describe()[['AirTemperature', 'DewPoint', 'SeaTemperature', 'RelativeHumidity']])
+    
+    
 
 
 def main():
