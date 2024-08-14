@@ -41,22 +41,42 @@ def validate_master_data(master_data):
     """
     print("Creating Dataframe")
     df = pd.DataFrame(master_data[1:], columns=master_data[0])
+    print(df)
  
     # check for missing values in master data
     missing_values = df.isnull().sum()
     print("Missing Values")
     print(missing_values)
 
+    print(df.isna().sum())
+    
+    """
+    # Remove rows with any missing values
+    cleaned_data = df.dropna(axis=0, how='any')
+
+    print("Values After Removing Missing Data")
+    print(cleaned_data)
+    print("End of Missing Values Removal")  
+
     # check for outliers
     df = df.drop(columns=(['station_id', 'longitude', 'latitude', 'time', 'QC_Flag']))
     print("Atmospheric Pressure Data")
     print(df.describe()[['AtmosphericPressure']])
+    
     print("Wind Related Statistics")
     print(df.describe()[['WindDirection', 'WindSpeed', 'Gust']])
+    print(cleaned_data.describe()[['WindDirection', 'WindSpeed', 'Gust']])
     print("Wave Related Statistics")
     print(df.describe()[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']])
+    print(cleaned_data.describe()[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']])
     print("Temp Related Statistics")
     print(df.describe()[['AirTemperature', 'DewPoint', 'SeaTemperature', 'RelativeHumidity']])
+    """
+
+
+
+
+
     
     
 
