@@ -23,12 +23,12 @@ data_error_log = SHEET.worksheet('gael_force_error_log')         # Errors sent t
 
 def load_marine_data_input_sheet():
     print("Loading Master Data")
-    marine_master_data = unvalidated_master_data.get_all_values()             # assign all values in master data to variable for use
+    master_data = unvalidated_master_data.get_all_values()             # assign all values in master data to variable for use
     print("Master Data Load Completed")
-    return marine_master_data
+    return master_data
 
 
-def validate_master_data():
+def validate_master_data(master_data):
     """
     This purpose of this function is to take the masterdata set and
     validate it for errors, based on:
@@ -40,13 +40,14 @@ def validate_master_data():
     I create a dataframe taking input from the marine_data_m2 masterdata.
     """
     print("Creating Dataframe")
-    df = pd.DataFrame(marine_data_input_sheet)
+    df = pd.DataFrame(master_data)
     print(df)
 
 
 def main():
-    validated_data = load_marine_data_input_sheet()
-    print(validated_data)
+    master_data = load_marine_data_input_sheet()
+    validate_master_data(master_data)
+
 
 
 main()
