@@ -37,44 +37,52 @@ def validate_master_data(master_data):
     - Duplicate Rows
     - Outliers
     - Inconsistancy
-    - Nan
     I create a dataframe taking input from the marine_data_m2 masterdata.
     """
-    print("Creating Dataframe")
+    print("Starting creation of dataframe")
+    # Create dataframe to work with
     df = pd.DataFrame(master_data[1:], columns=master_data[0])
-    print(df)
+    print("finished creating data frame")
+    
+
+    # Validate for Missing Values
+    pd.set_option('future.no_silent_downcasting', True)                         # Neccessary to include to aboid downcasting message
+    df = df.replace(to_replace=['nan', 'NaN', ''], value=np.nan)                # Replace versions of nan in df with numpy nan
+
+    # Get a count of cell values with missing data
+    count_of_values_with_nan = df.isnull().sum()                                         # get sum of missing values
+    if count_of_values_with_nan.any():
+        print("We found the following errors\n")                                # If there are any
+        print(count_of_values_with_nan)                                                  # Print them to the screen
+    else:
+        print("There were no cells with missing data")                          # Print to screen message no errors
+        print(count_of_values_with_nan)
+    
+
+    # Remove any rows that have no values
+    print("Starting to clean data frame")
+    new_df = df.dropna(subset=['station_id', 'longitude', 'latitude',    \
+    'time', 'AtmosphericPressure', 'WindDirection', 'WindSpeed', 'Gust', \
+    'WaveHeight', 'WavePeriod', 'MeanWaveDirection', 'AirTemperature',   \
+    'SeaTemperature', 'RelativeHumidity'])
+    count_of_nan_after_cleaning = new_df.isnull().sum()
+    print("The Result is")
+    print(count_of_nan_after_cleaning)
+    
+
+
+
  
-    # check for missing values in master data
-    missing_values_before = df.isnull().sum()
-    print("Missing Values")
-    print(missing_values_before)
 
-    print(df.isna().sum())
 
-    nan_free_df = df.applymap(lambda x: np.nan if isinstance(x, str) and x.strip().lower() == 'nan' else x)
-    print(nan_free_df.isna().sum())
-    print(df)
-
-    print(df.columns)
-    print("NAN FREE DF COLUUMNS START")
-    print(nan_free_df.columns)
-    print("NAN FREE DF COLUUMNS END")
-    print(nan_free_df.describe()[['time']])
-    cleaned_data = nan_free_df.dropna(axis=0, how='any')
-    print(cleaned_data.isna().sum())
-
+    
     
 
 
     
     
     """
-    # Remove rows with any missing values
-    cleaned_data = df.dropna(axis=0, how='any')
-
-    print("Values After Removing Missing Data")
-    print(cleaned_data)
-    print("End of Missing Values Removal")  
+ 
 
     # check for outliers
     df = df.drop(columns=(['station_id', 'longitude', 'latitude', 'time', 'QC_Flag']))
