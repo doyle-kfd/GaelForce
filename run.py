@@ -42,6 +42,8 @@ def validate_master_data(master_data):
     print("Starting creation of dataframe")
     # Create dataframe to work with
     df = pd.DataFrame(master_data[1:], columns=master_data[0])
+    df_focused = df[['station_id', 'longitude', 'latitude']]                    # <------------------finished here. creating new df with only columns we want
+    print(df_focused)
     print("finished creating data frame")
     
 
@@ -65,6 +67,7 @@ def validate_master_data(master_data):
     'time', 'AtmosphericPressure', 'WindDirection', 'WindSpeed', 'Gust', \
     'WaveHeight', 'WavePeriod', 'MeanWaveDirection', 'AirTemperature',   \
     'SeaTemperature', 'RelativeHumidity'])
+    print(new_df.columns)
     count_of_nan_after_cleaning = new_df.isnull().sum()
     print("The Result is")
     print(count_of_nan_after_cleaning)
