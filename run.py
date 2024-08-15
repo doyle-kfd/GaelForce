@@ -152,30 +152,11 @@ def validate_master_data(master_data):
     # print(values__validated_df['time'])
 
     print("End of data validation\n")
-    
-    """
- 
-
-    # check for outliers
-    df = df.drop(columns=(['station_id', 'longitude', 'latitude', 'time', 'QC_Flag']))
-    print("Atmospheric Pressure Data")
-    print(df.describe()[['AtmosphericPressure']])
-    
-    print("Wind Related Statistics")
-    print(df.describe()[['WindDirection', 'WindSpeed', 'Gust']])
-    print(cleaned_data.describe()[['WindDirection', 'WindSpeed', 'Gust']])
-    print("Wave Related Statistics")
-    print(df.describe()[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']])
-    print(cleaned_data.describe()[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']])
-    print("Temp Related Statistics")
-    print(df.describe()[['AirTemperature', 'DewPoint', 'SeaTemperature', 'RelativeHumidity']])
-    """
 
 
 def main():
     master_data = load_marine_data_input_sheet()
     validate_master_data(master_data)
-
 
 
 main()
