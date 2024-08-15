@@ -136,9 +136,20 @@ def validate_master_data(master_data):
 
     #
     #
+    # Check for data inconsistancy in time column
     #
     #
-    #
+
+    # Create a pattern to search for in the time field yyyy-mm-ddT00:00:00Z
+    pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
+
+    inconsistent_date_format = duplicates_validated_df[~duplicates_validated_df['time'].str.match(pattern)]
+    print("Starting check on date field\n")
+    print(inconsistent_date_format.sum)
+    print("ended check on date field\n")
+
+    # print(values__validated_df)
+    # print(values__validated_df['time'])
 
     print("End of data validation\n")
     
