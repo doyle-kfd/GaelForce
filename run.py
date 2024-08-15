@@ -23,9 +23,9 @@ user_data_report = SHEET.worksheet('user_data_report')           # Sheet contain
 data_error_log = SHEET.worksheet('gael_force_error_log')         # Errors sent to log 
 
 def load_marine_data_input_sheet():
-    print("Loading Master Data")
+    print("Loading Master Data\n")
     master_data = unvalidated_master_data.get_all_values()             # assign all values in master data to variable for use
-    print("Master Data Load Completed")
+    print("Master Data Load Completed\n")
     return master_data
 
 
@@ -39,38 +39,82 @@ def validate_master_data(master_data):
     - Inconsistancy
     I create a dataframe taking input from the marine_data_m2 masterdata.
     """
-    print("Starting creation of dataframe")
     # Create dataframe to work with
     df = pd.DataFrame(master_data[1:], columns=master_data[0])
-    df_focused = df[['station_id', 'longitude', 'latitude']]                    # <------------------finished here. creating new df with only columns we want
-    print(df_focused)
-    print("finished creating data frame")
-    
 
+    #
+    #
+    # Check for missing values
+    #
+    #
+
+    # pick out the specific columns to be used in the application
+    master_df = df[['time', 'AtmosphericPressure', 'WindDirection', \
+                     'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',\
+                     'MeanWaveDirection', 'Hmax', 'AirTemperature', 'SeaTemperature', 'RelativeHumidity']]  
+
+    print("Starting Data Validation\n")
+    print("Checking for missing values in data set\n")
     # Validate for Missing Values
     pd.set_option('future.no_silent_downcasting', True)                         # Neccessary to include to aboid downcasting message
-    df = df.replace(to_replace=['nan', 'NaN', ''], value=np.nan)                # Replace versions of nan in df with numpy nan
+    master_df = master_df.replace(to_replace=['nan', 'NaN', ''], value=np.nan)  # Replace versions of nan in df with numpy nan
 
     # Get a count of cell values with missing data
-    count_of_values_with_nan = df.isnull().sum()                                         # get sum of missing values
+    count_of_values_with_nan = master_df.isnull().sum()                         # get sum of missing values
     if count_of_values_with_nan.any():
         print("We found the following errors\n")                                # If there are any
-        print(count_of_values_with_nan)                                                  # Print them to the screen
+        print(count_of_values_with_nan)
+        print("\n")                                         # Print them to the screen
     else:
         print("There were no cells with missing data")                          # Print to screen message no errors
         print(count_of_values_with_nan)
-    
+        print("\n")
 
     # Remove any rows that have no values
-    print("Starting to clean data frame")
-    new_df = df.dropna(subset=['station_id', 'longitude', 'latitude',    \
-    'time', 'AtmosphericPressure', 'WindDirection', 'WindSpeed', 'Gust', \
-    'WaveHeight', 'WavePeriod', 'MeanWaveDirection', 'AirTemperature',   \
-    'SeaTemperature', 'RelativeHumidity'])
-    print(new_df.columns)
-    count_of_nan_after_cleaning = new_df.isnull().sum()
+    print("Starting to clean data frame\n")
+    values__validated_df = master_df.dropna(subset=['time', 'AtmosphericPressure', 'WindDirection',   \
+                                                   'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',  \
+                                                   'MeanWaveDirection', 'AirTemperature',            \
+                                                   'SeaTemperature', 'RelativeHumidity'])
+    count_of_nan_after_cleaning =values__validated_df.isnull().sum()
     print("The Result is")
     print(count_of_nan_after_cleaning)
+    print("Missing value validation completed\n")
+
+
+    #
+    #
+    # Check dor duplicate rows
+    #
+    #
+    print("Validating duplicates started\n")
+    count_of_duplicates = values__validated_df.duplicated().sum()
+    print(f"There are {count_of_duplicates} duplicates in the working data set\n")
+    duplicates_validated_df = values__validated_df.drop_duplicates(keep='first')
+    print("Validating duplicates ended\n")
+
+
+    #
+    #
+    # Check for outliers
+    #
+    #
+    # Create related dataframes for data comparison purposes
+    atmospheric_specific_df = duplicates_validated_df[['AtmosphericPressure']]
+    wind_specific_df = duplicates_validated_df[['WindSpeed', 'Gust']]
+    wave_specific_df = duplicates_validated_df[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']]
+    temp_specific_df = duplicates_validated_df[['AirTemperature', 'SeaTemperature']]
+    print(wind_specific_df)
+    print(wave_specific_df)
+    print(temp_specific_df)
+
+
+
+
+
+
+    print("End of data validation\n")
+
     
 
 
