@@ -107,6 +107,9 @@ def validate_master_data(master_data):
     print(wind_specific_df)
     print(wave_specific_df)
     print(temp_specific_df)
+    
+    # Create outliers
+    
 
 
 
