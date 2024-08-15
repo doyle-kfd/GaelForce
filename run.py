@@ -2,6 +2,7 @@ import gspread
 import pandas as pd
 import numpy as np
 from google.oauth2.service_account import Credentials
+from scipy.stats import zscore
 
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -27,6 +28,16 @@ def load_marine_data_input_sheet():
     master_data = unvalidated_master_data.get_all_values()             # assign all values in master data to variable for use
     print("Master Data Load Completed\n")
     return master_data
+
+def check_for_outliers(df):
+    """
+    The purpose of the function is to check for outliers
+    using Z-Score method
+    """
+    z_scores = zscore(df)
+    abs_z_scores = abs(z_scores)
+    outliers = (abs_z_scores > 3).any(axis=1)
+    return df[outliers]
 
 
 def validate_master_data(master_data):
@@ -99,19 +110,31 @@ def validate_master_data(master_data):
     # Check for outliers
     #
     #
+
+    # Convert cell values to integers for mathamtical use
+    df_numeric = duplicates_validated_df.apply(lambda col: col.map(lambda x: pd.to_numeric(x, errors='coerce')))
+
+
     # Create related dataframes for data comparison purposes
-    atmospheric_specific_df = duplicates_validated_df[['AtmosphericPressure']]
-    wind_specific_df = duplicates_validated_df[['WindSpeed', 'Gust']]
-    wave_specific_df = duplicates_validated_df[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']]
-    temp_specific_df = duplicates_validated_df[['AirTemperature', 'SeaTemperature']]
+    atmospheric_specific_df = df_numeric[['AtmosphericPressure']]
+    wind_specific_df = df_numeric[['WindSpeed', 'Gust']]
+    wave_specific_df = df_numeric[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']]
+    temp_specific_df = df_numeric[['AirTemperature', 'SeaTemperature']]
+    print(atmospheric_specific_df)
     print(wind_specific_df)
     print(wave_specific_df)
     print(temp_specific_df)
     
     # Create outliers
     
-
-
+    atmospheric_outliers = check_for_outliers(atmospheric_specific_df)
+    print("Atmospheric Outliers:\n", atmospheric_outliers)
+    """
+    wind_outliers = check_for_outliers(wind_specific_df)
+    wave_outliers = check_for_outliers(wave_specific_df)
+    temp_outliers = check_for_outliers(temp_specific_df)
+    
+    """
 
 
 
