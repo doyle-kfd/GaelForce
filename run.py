@@ -212,7 +212,9 @@ def validate_master_data(master_data):
         # Check for outliers
         #
         #
-
+        session_log.update([['Outlier Validation Started']], 'A17')
+        log_timestamp = pd.Timestamp.now()
+        session_log.update([['{}'.format(log_timestamp)]], 'F17')
 
         print("\n\n\nStarting Outliers Validation\n\n\n")
 
@@ -239,9 +241,10 @@ def validate_master_data(master_data):
         atmos_outlier_log.update([['Atmospheric Outliers Processing Started']], 'A1')
         log_timestamp = pd.Timestamp.now()
         atmos_outlier_log.update([['{}'.format(log_timestamp)]], 'F1')
+        atmos_outlier_log.update([['Atmospheric Pressure']], 'A3')
 
         # Initilise starting positions for atmospheric outliers in google sheets
-        start_row = 2
+        start_row = 4
         max_rows_to_display = 10
 
         # process each atmospheric outlier, writing any entries to the atmos_output_log
@@ -263,9 +266,11 @@ def validate_master_data(master_data):
         wind_outlier_log.update([['Wind Outliers Processing Started']], 'A1')
         log_timestamp = pd.Timestamp.now()
         wind_outlier_log.update([['{}'.format(log_timestamp)]], 'F1')
+        wind_outlier_log.update([['Wind Speed']], 'A3')
+        wind_outlier_log.update([['Wind Gusts']], 'B3')
         # Start the wind specific outlier validation process
         # Initilise starting positions for outliers in google sheets
-        start_row = 2
+        start_row = 4
         max_rows_to_display = 10
 
         for i, row in wind_specific_df.iterrows():
@@ -286,9 +291,12 @@ def validate_master_data(master_data):
         wave_outlier_log.update([['Wave Outliers Processing Started']], 'A1')
         log_timestamp = pd.Timestamp.now()
         wave_outlier_log.update([['{}'.format(log_timestamp)]], 'F1')
+        wave_outlier_log.update([['Wave Height']], 'A3')
+        wave_outlier_log.update([['Wave Period']], 'B3')
+        wave_outlier_log.update([['Wave Mean']], 'C3')
         # Start the wave specific outlier validation process
         # Initilise starting positions for outliers in google sheets
-        start_row = 2
+        start_row = 4
         max_rows_to_display = 10
 
         for i, row in wave_specific_df.iterrows():
@@ -309,9 +317,11 @@ def validate_master_data(master_data):
         temp_outlier_log.update([['Temperature  Outliers Processing Started']], 'A1')
         log_timestamp = pd.Timestamp.now()
         temp_outlier_log.update([['{}'.format(log_timestamp)]], 'F1')
+        temp_outlier_log.update([['AirTemperature']], 'A3')
+        temp_outlier_log.update([['SeaTemperature']], 'B3')
         # Start the wave specific outlier validation process
         # Initilise starting positions for outliers in google sheets
-        start_row = 2
+        start_row = 4
         max_rows_to_display = 10
 
         for i, row in temp_specific_df.iterrows():
@@ -330,10 +340,10 @@ def validate_master_data(master_data):
         print("Temperature Outliers:\n", temp_outliers) 
         
 
-        
-
         print("\n\n\nEnded Outliers Validation\n\n\n")
-
+        session_log.update([['Outlier Validation Finished']], 'A18')
+        log_timestamp = pd.Timestamp.now()
+        session_log.update([['{}'.format(log_timestamp)]], 'F18')
 
 
         #
