@@ -34,9 +34,15 @@ temp_outlier_log =  SHEET.worksheet('temp_outliers')
 
 
 # Initialise the sheets for use
+validated_master_data.clear()
+user_data_report.clear()  
 session_log.clear()
-error_log.clear()                                                              # Clear the error log for output
-user_data_report.clear()                                                         # clear the User data report sheet for output
+error_log.clear()
+atmos_outlier_log.clear()
+wind_outlier_log.clear()
+wave_outlier_log.clear()
+temp_outlier_log.clear()                                                              
+                                                       
 
 
 def load_marine_data_input_sheet():
@@ -215,6 +221,27 @@ def validate_master_data(master_data):
 
         # Create related dataframes for data comparison purposes
         atmospheric_specific_df = numeric_df[['AtmosphericPressure']]
+        print(f"ATMOS OUTLIERS >>>>>>> :\n {atmospheric_specific_df}")
+        atmos_outlier_log.update([['Atmospheric Outliers Processing Started']], 'A1')
+        log_timestamp = pd.Timestamp.now()
+        atmos_outlier_log.update([['{}'.format(log_timestamp)]], 'F1')
+
+        start_row = 2
+        max_rows_to_display = 10
+        for i, row in atmospheric_specific_df.iterrows():
+            if i >= max_rows_to_display:
+                break
+            # Convert the row to a list and format it as needed for your error_log
+            row_data = row.tolist()
+            atmos_outlier_log.update([row_data], f'A{start_row}')  # Update error log with the row data
+
+
+            print(f"Processing row {i+1} with data: {row_data}")
+
+            # Move to the next row in the error log
+            start_row += 1
+
+        
         wind_specific_df = numeric_df[['WindSpeed', 'Gust']]
         wave_specific_df = numeric_df[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']]
         temp_specific_df = numeric_df[['AirTemperature', 'SeaTemperature']]
@@ -229,7 +256,7 @@ def validate_master_data(master_data):
         print("Wind Outliers:\n", wind_outliers)
         print("Wave Outliers:\n", wave_outliers)
         print("Temperature Outliers:\n", temp_outliers)
-        
+
         print("\n\n\nEnded Outliers Validation\n\n\n")
 
 
@@ -252,7 +279,7 @@ def validate_master_data(master_data):
         pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
 
 
-        inconsistent_date_format = duplicates_validated_df[~duplicates_validated_df['time'].str.match(pattern)]
+        inconsistent_date_format = no_duplicates_df[~no_duplicates_df['time'].str.match(pattern)]
         """
         if  inconsistent_date_format.empty:
             print("All time values are in the correct format")
@@ -267,12 +294,12 @@ def validate_master_data(master_data):
 
         # print(values_validated_df)
         print("\n\n\n\n\n")
-        print(duplicates_validated_df['time'])
+        print(no_duplicates_df['time'])
         print("\n\n\n\n\n")
 
         print("End of data validation\n")
 
-        return duplicates_validated_df
+        return no_duplicates_df
 
         
 
