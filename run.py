@@ -106,8 +106,8 @@ def validate_master_data(master_data):
         master_df = master_df.replace(to_replace=['nan', 'NaN', ''], value=np.nan)    # Replace versions of nan in df with numpy nan
 
         # Get a count of cell values with missing data
-        count_of_values_with_nan = master_df.isnull().sum()                           # get sum of missing values
-        if count_of_values_with_nan.any():
+        missing_values = master_df.isnull().sum()                           # get sum of missing values
+        if missing_values.any():
             print("We found the following columns with missing values\n")             # If there are any
             log_timestamp = pd.Timestamp.now()
             
@@ -115,22 +115,31 @@ def validate_master_data(master_data):
             session_log.update([['{}'.format(log_timestamp)]], 'F10')
             error_log.update([['We found missing values in the master data, in the following columns:']], 'A3')
             error_log.update([['{}'.format(log_timestamp)]], 'F3')
-            print(count_of_values_with_nan)
-            error_log.update([['{}'.format(count_of_values_with_nan)]], 'A4')         ---------------->>>>>>>>> Finished here. Trying to get the formatted data into the sheet
+            print(missing_values)
+            error_log.update([['{}'.format(missing_values)]], 'A4')
+
+            # Convert the count_of_values_with_nan Series to a DataFrame for formatting to sheet
+            missing_values_df = missing_values[missing_values > 0].reset_index()
+            missing_values_df.columns = ['Column', 'Missing Values']
+            missing_values.columns = ['Column', 'Missing Values']
+
+            # Write the DataFrame to the error log
+            for i, row in missing_values_df.iterrows():
+                error_log.update([[row['Column'], row['Missing Values']]], f'A{i+4}') 
             print("\n")                                                               # Print them to the screen
         else:
             print("There were no cells with missing data")                            # Print to screen message no errors
-            print(count_of_values_with_nan)
+            print(missing_values)
             session_log.update([['We found no missing values in the master data']], 'A10')
             print("\n")
 
-            # Remove any rows that have no values
-        if count_of_values_with_nan.any():
+        # Remove any rows that have no values
+        if missing_values.any():
             session_log.update([['Removing data with no values from master data']], 'A12')
             log_timestamp = pd.Timestamp.now()
             session_log.update([['{}'.format(log_timestamp)]], 'f12')
             print("Starting to clean data frame\n")
-            values_validated_df = master_df.dropna()
+            values_validated_df = master_df.dropna()                                                 # Create a new df having dropped NaN values
             session_log.update([['Finished removing data with no values from master data']], 'A13')
             log_timestamp = pd.Timestamp.now()
             session_log.update([['{}'.format(log_timestamp)]], 'F13')
