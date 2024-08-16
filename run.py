@@ -213,21 +213,38 @@ def validate_master_data(master_data):
         #
         #
 
-        # Convert cell values to integers for mathamtical use
 
         print("\n\n\nStarting Outliers Validation\n\n\n")
-        # convert each valu in  to a number 
+
+        # Convert cell values to integers for mathamtical use
         numeric_df = no_duplicates_df.apply(lambda col: col.map(lambda x: pd.to_numeric(x, errors='coerce')))
 
-        # Create related dataframes for data comparison purposes
+        # Create dataframes for use in outlier validation
         atmospheric_specific_df = numeric_df[['AtmosphericPressure']]
-        print(f"ATMOS OUTLIERS >>>>>>> :\n {atmospheric_specific_df}")
+        wind_specific_df = numeric_df[['WindSpeed', 'Gust']]
+        wave_specific_df = numeric_df[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']]
+        temp_specific_df = numeric_df[['AirTemperature', 'SeaTemperature']]
+
+        # Create outliers from specific data frames
+        atmospheric_outliers = check_for_outliers(atmospheric_specific_df)
+        wind_outliers = check_for_outliers(wind_specific_df)
+        wave_outliers = check_for_outliers(wave_specific_df)
+        temp_outliers = check_for_outliers(temp_specific_df)
+
+
+
+
+        
+        # Start the atmospheric outlier validation process
         atmos_outlier_log.update([['Atmospheric Outliers Processing Started']], 'A1')
         log_timestamp = pd.Timestamp.now()
         atmos_outlier_log.update([['{}'.format(log_timestamp)]], 'F1')
 
+        # Initilise starting positions for atmospheric outliers in google sheets
         start_row = 2
         max_rows_to_display = 10
+
+        # process each atmospheric outlier, writing any entries to the atmos_output_log
         for i, row in atmospheric_specific_df.iterrows():
             if i >= max_rows_to_display:
                 break
@@ -241,20 +258,60 @@ def validate_master_data(master_data):
             # Move to the next row in the error log
             start_row += 1
 
-        
-        wind_specific_df = numeric_df[['WindSpeed', 'Gust']]
-        wave_specific_df = numeric_df[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']]
-        temp_specific_df = numeric_df[['AirTemperature', 'SeaTemperature']]
-
-
-        # Create outliers from specific data frames
-        atmospheric_outliers = check_for_outliers(atmospheric_specific_df)
-        wind_outliers = check_for_outliers(wind_specific_df)
-        wave_outliers = check_for_outliers(wave_specific_df)
-        temp_outliers = check_for_outliers(temp_specific_df)
         print("Atmospheric Outliers:\n", atmospheric_outliers)
+
+        wind_outlier_log.update([['Wind Outliers Processing Started']], 'A1')
+        log_timestamp = pd.Timestamp.now()
+        wind_outlier_log.update([['{}'.format(log_timestamp)]], 'F1')
+        # Start the wind specific outlier validation process
+        # Initilise starting positions for outliers in google sheets
+        start_row = 2
+        max_rows_to_display = 10
+
+        for i, row in wind_specific_df.iterrows():
+            if i >= max_rows_to_display:
+                break
+            # Convert the row to a list and format it as needed for your error_log
+            row_data = row.tolist()
+            wind_outlier_log.update([row_data], f'A{start_row}')  # Update error log with the row data
+
+
+            print(f"Processing row {i+1} with data: {row_data}")
+
+            # Move to the next row in the error log
+            start_row += 1
+
         print("Wind Outliers:\n", wind_outliers)
-        print("Wave Outliers:\n", wave_outliers)
+
+        wave_outlier_log.update([['Wind Outliers Processing Started']], 'A1')
+        log_timestamp = pd.Timestamp.now()
+        wave_outlier_log.update([['{}'.format(log_timestamp)]], 'F1')
+        # Start the wave specific outlier validation process
+        # Initilise starting positions for outliers in google sheets
+        start_row = 2
+        max_rows_to_display = 10
+
+        for i, row in wind_specific_df.iterrows():
+            if i >= max_rows_to_display:
+                break
+            # Convert the row to a list and format it as needed for your error_log
+            row_data = row.tolist()
+            wave_outlier_log.update([row_data], f'A{start_row}')  # Update error log with the row data
+
+
+            print(f"Processing row {i+1} with data: {row_data}")
+
+            # Move to the next row in the error log
+            start_row += 1
+            
+          print("Wave Outliers:\n", wave_outliers)      
+        
+
+
+
+
+        
+
         print("Temperature Outliers:\n", temp_outliers)
 
         print("\n\n\nEnded Outliers Validation\n\n\n")
