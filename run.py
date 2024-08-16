@@ -111,14 +111,14 @@ def validate_master_data(master_data):
             print("We found the following columns with missing values\n")             # If there are any
             log_timestamp = pd.Timestamp.now()
             
-            session_log.update([['We found missing values in the master data, please check the error log']], 'A10')
+            session_log.update([['We found missing values in the master data, please check the error log    <<<<<<<']], 'A10')
             session_log.update([['{}'.format(log_timestamp)]], 'F10')
             error_log.update([['We found missing values in the master data, in the following columns:']], 'A3')
             error_log.update([['{}'.format(log_timestamp)]], 'F3')
             print(missing_values)
             error_log.update([['{}'.format(missing_values)]], 'A4')
 
-            # Convert the count_of_values_with_nan Series to a DataFrame for formatting to sheet
+            # Convert count of missing values series to a dataFrame for formatting to sheet
             missing_values_df = missing_values[missing_values > 0].reset_index()
             missing_values_df.columns = ['Column', 'Missing Values']
             missing_values.columns = ['Column', 'Missing Values']
@@ -139,18 +139,16 @@ def validate_master_data(master_data):
             log_timestamp = pd.Timestamp.now()
             session_log.update([['{}'.format(log_timestamp)]], 'f12')
             print("Starting to clean data frame\n")
-            values_validated_df = master_df.dropna()                                                 # Create a new df having dropped NaN values
+            missing_values_removed_df = master_df.dropna()                                                 # Create a new df having dropped NaN values
             session_log.update([['Finished removing data with no values from master data']], 'A13')
             log_timestamp = pd.Timestamp.now()
             session_log.update([['{}'.format(log_timestamp)]], 'F13')
-            count_of_nan_after_cleaning = values_validated_df.isnull().sum()
+            missing_values = missing_values_removed_df.isnull().sum()                                      # count the missing values
             print("The Result is")
-            print(count_of_nan_after_cleaning)
+            print(missing_values)
             print("Missing value validation completed\n")
             print("\n\n\n")
-            print(master_df)
-            print("\n\n\n")
-            print(values_validated_df)
+            print(missing_values_removed_df)
             print("\n\n\n")
         #
         #
@@ -158,9 +156,43 @@ def validate_master_data(master_data):
         #
         #
         print("Validating duplicates started\n")
-        count_of_duplicates = values_validated_df.duplicated().sum()
-        print(f"There are {count_of_duplicates} duplicates in the working data set\n")
-        duplicates_validated_df = values_validated_df.drop_duplicates(keep='first')
+        duplicates_found = missing_values_removed_df.duplicated(keep=False).sum()                           # Get a count of duplicates found
+                  
+        if duplicates_found.any():                                                                # If there are any duplicates found
+            print(f"There are {duplicates_found} duplicates in the working data set\n")
+            session_log.update([['Duplicates found in data set: {} , please check the error log    <<<<<<<<'.format(duplicates_found)]], 'A15') # Write the number of ducplicates to the session log
+            log_timestamp = pd.Timestamp.now()
+            session_log.update([['{}'.format(log_timestamp)]], 'F15')
+            print("\n\n\n Duplicates Found")
+
+
+            # Retrieve duplicate rows and store
+            error_log.update([['Duplicate Rows Found']], 'A15')
+            log_timestamp = pd.Timestamp.now()
+            error_log.update([['{}'.format(log_timestamp)]], 'F15')
+
+            # Filter the DataFrame to get the duplicate rows
+            duplicates_df = missing_values_removed_df[missing_values_removed_df.duplicated(keep=False)]
+
+            # Output starting at row 17
+            start_row = 17
+            for i, row in duplicates_df.iterrows():
+                print(i)
+                print(row)
+
+                # Convert the row to a list and format it as needed for your error_log
+                row_data = row.tolist()
+                error_log.update([row_data], f'A{start_row}')  # Update error log with the row data
+
+                # Move to the next row in the error log
+                start_row += 1
+
+            # Create a new data frame with no duplicates.
+            duplicates_validated_df = missing_values_removed_df.drop_duplicates(keep='first')
+
+        else:
+            print("No duplicates found in the working data set.\n")
+
         print("Validating duplicates ended\n")
 
         #
