@@ -25,6 +25,12 @@ user_data_report = SHEET.worksheet('user_data_report')                          
 session_log = SHEET.worksheet('session_log')                                     # Errors sent to log
 error_log = SHEET.worksheet('gael_force_error_log')                              # Errors sent to log
 
+# define the sheets to be user for outlier output
+atmos_outlier_log = SHEET.worksheet('atmos_outliers')
+wind_outlier_log =  SHEET.worksheet('wind_outliers')
+wave_outlier_log =  SHEET.worksheet('wave_outliers')
+temp_outlier_log =  SHEET.worksheet('temp_outliers')      
+
 
 
 # Initialise the sheets for use
@@ -60,10 +66,10 @@ def check_for_outliers(df):
     The purpose of the function is to check for outliers
     using Z-Score method
     """
-    z_scores = zscore(df)
-    abs_z_scores = abs(z_scores)
-    outliers = (abs_z_scores > 3).any(axis=1)
-    return df[outliers]
+    z_scores = zscore(df)                            # calculate a z score for all values in dataframe
+    abs_z_scores = abs(z_scores)                     # take the absolute value 
+    outliers = (abs_z_scores > 3).any(axis=1)        # creates a bolean based on whether the absolute number is  > 3
+    return df[outliers]                              # return the dataframe of the outliers identified
 
 
 def validate_master_data(master_data):
@@ -188,7 +194,7 @@ def validate_master_data(master_data):
                 start_row += 1
 
             # Create a new data frame with no duplicates.
-            duplicates_validated_df = missing_values_removed_df.drop_duplicates(keep='first')
+            no_duplicates_df = missing_values_removed_df.drop_duplicates(keep='first')
 
         else:
             print("No duplicates found in the working data set.\n")
@@ -202,17 +208,17 @@ def validate_master_data(master_data):
         #
 
         # Convert cell values to integers for mathamtical use
-        df_numeric = duplicates_validated_df.apply(lambda col: col.map(lambda x: pd.to_numeric(x, errors='coerce')))
+
+        print("\n\n\nStarting Outliers Validation\n\n\n")
+        # convert each valu in  to a number 
+        numeric_df = no_duplicates_df.apply(lambda col: col.map(lambda x: pd.to_numeric(x, errors='coerce')))
 
         # Create related dataframes for data comparison purposes
-        atmospheric_specific_df = df_numeric[['AtmosphericPressure']]
-        wind_specific_df = df_numeric[['WindSpeed', 'Gust']]
-        wave_specific_df = df_numeric[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']]
-        temp_specific_df = df_numeric[['AirTemperature', 'SeaTemperature']]
-        print(atmospheric_specific_df)
-        print(wind_specific_df)
-        print(wave_specific_df)
-        print(temp_specific_df)
+        atmospheric_specific_df = numeric_df[['AtmosphericPressure']]
+        wind_specific_df = numeric_df[['WindSpeed', 'Gust']]
+        wave_specific_df = numeric_df[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']]
+        temp_specific_df = numeric_df[['AirTemperature', 'SeaTemperature']]
+
 
         # Create outliers from specific data frames
         atmospheric_outliers = check_for_outliers(atmospheric_specific_df)
@@ -223,6 +229,10 @@ def validate_master_data(master_data):
         print("Wind Outliers:\n", wind_outliers)
         print("Wave Outliers:\n", wave_outliers)
         print("Temperature Outliers:\n", temp_outliers)
+        
+        print("\n\n\nEnded Outliers Validation\n\n\n")
+
+
 
         #
         #
