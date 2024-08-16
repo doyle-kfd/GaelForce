@@ -283,7 +283,7 @@ def validate_master_data(master_data):
 
         print("Wind Outliers:\n", wind_outliers)
 
-        wave_outlier_log.update([['Wind Outliers Processing Started']], 'A1')
+        wave_outlier_log.update([['Wave Outliers Processing Started']], 'A1')
         log_timestamp = pd.Timestamp.now()
         wave_outlier_log.update([['{}'.format(log_timestamp)]], 'F1')
         # Start the wave specific outlier validation process
@@ -291,7 +291,7 @@ def validate_master_data(master_data):
         start_row = 2
         max_rows_to_display = 10
 
-        for i, row in wind_specific_df.iterrows():
+        for i, row in wave_specific_df.iterrows():
             if i >= max_rows_to_display:
                 break
             # Convert the row to a list and format it as needed for your error_log
@@ -303,16 +303,34 @@ def validate_master_data(master_data):
 
             # Move to the next row in the error log
             start_row += 1
-            
-          print("Wave Outliers:\n", wave_outliers)      
+
+        print("Wave Outliers:\n", wave_outliers)
+        
+        temp_outlier_log.update([['Temperature  Outliers Processing Started']], 'A1')
+        log_timestamp = pd.Timestamp.now()
+        temp_outlier_log.update([['{}'.format(log_timestamp)]], 'F1')
+        # Start the wave specific outlier validation process
+        # Initilise starting positions for outliers in google sheets
+        start_row = 2
+        max_rows_to_display = 10
+
+        for i, row in temp_specific_df.iterrows():
+            if i >= max_rows_to_display:
+                break
+            # Convert the row to a list and format it as needed for your error_log
+            row_data = row.tolist()
+            temp_outlier_log.update([row_data], f'A{start_row}')  # Update error log with the row data
+
+
+            print(f"Processing row {i+1} with data: {row_data}")
+
+            # Move to the next row in the error log
+            start_row += 1
+
+        print("Temperature Outliers:\n", temp_outliers) 
         
 
-
-
-
         
-
-        print("Temperature Outliers:\n", temp_outliers)
 
         print("\n\n\nEnded Outliers Validation\n\n\n")
 
