@@ -130,8 +130,11 @@ def validate_master_data(master_data, session_log_data, error_log_data):
             print("We found the following columns with missing values\n")
             session_log_data.append(['We found missing values in the master data'])
             session_log_data.append([str(pd.Timestamp.now())])
-            error_log_data.append(['Missing Values'])
-            error_log_data.append(missing_values[missing_values > 0].reset_index().values.tolist())
+            error_log_data.append(['Missing Values       <<<<<'])
+            # append missing values in a column
+            for column, count in missing_values.items():
+                if count > 0:
+                    error_log_data.append([f"{column}: {count} missing values"])
         else:
             print("There were no cells with missing data")
             session_log_data.append(['We found no missing values in the master data'])
@@ -154,7 +157,19 @@ def validate_master_data(master_data, session_log_data, error_log_data):
             session_log_data.append([str(pd.Timestamp.now())])
             error_log_data.append(['Duplicate Rows Found'])
             duplicates_df = missing_values_removed_df[missing_values_removed_df.duplicated(keep=False)]
-            error_log_data.append(duplicates_df.values.tolist())
+
+            # Format duplicates_df for column-wise insertion
+            duplicates_list_of_lists = duplicates_df.values.tolist()
+            
+            # Add header for duplicates (optional)
+            duplicates_header = [duplicates_df.columns.tolist()]
+            
+            # Combine header and data
+            formatted_duplicates = duplicates_header + duplicates_list_of_lists
+            
+            # Append to the error log data
+            error_log_data.append(['Duplicate Rows Data'])
+            error_log_data.extend(formatted_duplicates)
             no_duplicates_df = missing_values_removed_df.drop_duplicates(keep='first')
         else:
             print("No duplicates found in the working data set.\n")
@@ -211,7 +226,6 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         # Convert all elements in logs to strings
         session_log_data = [[str(item) for item in sublist] for sublist in session_log_data]
         print("Session Log Data\n")
-        print(session_log_data)
         error_log_data = [[str(item) for item in sublist] for sublist in error_log_data]
         date_time_log_data = [[str(item) for item in sublist] for sublist in date_time_log_data]
 
@@ -227,8 +241,8 @@ def validate_master_data(master_data, session_log_data, error_log_data):
     finally:
         # Convert log lists to strings and update Google Sheets
         session_log.update(df_to_list_of_lists(pd.DataFrame(session_log_data)), 'A1')
-        error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)), 'A30')
-        date_time_log.update(df_to_list_of_lists(pd.DataFrame(date_time_log_data)), 'A30')
+        error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)), 'A1')
+        date_time_log.update(df_to_list_of_lists(pd.DataFrame(date_time_log_data)), 'A1')
 
     set_with_dataframe(validated_master_data, validated_data_df)
     return validated_data_df
