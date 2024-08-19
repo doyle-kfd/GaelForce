@@ -35,7 +35,8 @@ temp_outlier_log =  SHEET.worksheet('temp_outliers')
 
 def df_to_list_of_lists(df):
     return [df.columns.tolist()] + df.values.tolist()
-       
+
+
 # Initialize the sheets for use
 def clear_all_sheets():
     sheets = [
@@ -44,7 +45,7 @@ def clear_all_sheets():
     ]
     for sheet in sheets:
         sheet.clear()
-                                                       
+
 
 
 def load_marine_data_input_sheet():
@@ -53,8 +54,8 @@ def load_marine_data_input_sheet():
     error_log_data = [['Error Log Started'], [str(pd.Timestamp.now())]]
 
     # Write start log data to session and error logs
-    session_log.update(session_log_data, 'A1')
-    error_log.update(error_log_data, 'A1')
+    # >>>>>>> session_log.update(session_log_data, 'A1')
+    # >>>>>>> error_log.update(error_log_data, 'A1')  
 
     # write - start loading master data
     print("\nLoading Master Data\n")
@@ -69,7 +70,7 @@ def load_marine_data_input_sheet():
     print("Master Data Load Completed\n")
 
     # return the dataframe with the master data from the sheet
-    return master_data
+    return master_data, session_log_data, error_log_data
 
 
 def check_for_outliers(df):
@@ -83,7 +84,7 @@ def check_for_outliers(df):
     return df[outliers]                              # return the dataframe of the outliers identified
 
 
-def validate_master_data(master_data):
+def validate_master_data(master_data, session_log_data, error_log_data):
     """
     This purpose of this function is to take the masterdata set and
     validate it for errors, based on:
@@ -93,10 +94,12 @@ def validate_master_data(master_data):
     - Inconsistancy
     I create a dataframe taking input from the marine_data_m2 masterdata.
     """
-    session_log_data = []
-    error_log_data = []
+    # Initialise log lists
+    # session_log_data = []
+    # error_log_data = []
+
+
     date_time_log_data = []  # Initialize date_time_log_data here
-    
     print("\nStarting Data Validation Process\n")
     validated_data_df = pd.DataFrame()
 
@@ -122,8 +125,6 @@ def validate_master_data(master_data):
         pd.set_option('future.no_silent_downcasting', True)
         master_df = master_df.replace(to_replace=['nan', 'NaN', ''], value=np.nan)
         missing_values = master_df.isnull().sum()
-        
-
         # If there are missing values, write to the session log and error log
         if missing_values.any():
             print("We found the following columns with missing values\n")
@@ -147,7 +148,6 @@ def validate_master_data(master_data):
         # Check for duplicate rows
         print("Validating duplicates started\n")
         duplicates_found = missing_values_removed_df.duplicated(keep=False).sum()
-        
         if duplicates_found:
             print(f"There are {duplicates_found} duplicates in the working data set\n")
             session_log_data.append([f'Duplicates found in data set: {duplicates_found}'])
@@ -184,7 +184,6 @@ def validate_master_data(master_data):
         if not temp_outliers.empty:
             temp_outlier_log.update(df_to_list_of_lists(temp_outliers), 'A1')
 
-
         # Check for date inconsistencies
         print("Starting Date and Time Validation\n")
         session_log_data.append(['Date and Time Validation Started'])
@@ -205,23 +204,21 @@ def validate_master_data(master_data):
             validated_data_df['time'] = pd.to_datetime(validated_data_df['time'], format='%Y-%m-%dT%H:%M:%SZ')
             validated_data_df['time'] = validated_data_df['time'].dt.strftime('%d-%m-%Y %H:%M:%S')
 
-
         print("Ending Date and Time Validation\n")
         session_log_data.append(['Data Validation Ended <<<<<<<<<<'])
         session_log_data.append([str(pd.Timestamp.now())])
 
         # Convert all elements in logs to strings
         session_log_data = [[str(item) for item in sublist] for sublist in session_log_data]
+        print("Session Log Data\n")
+        print(session_log_data)
         error_log_data = [[str(item) for item in sublist] for sublist in error_log_data]
         date_time_log_data = [[str(item) for item in sublist] for sublist in date_time_log_data]
 
-
         # Write all accumulated data at once
-        session_log.update(session_log_data, 'A1')
-        error_log.update(error_log_data, 'A1')
+        # session_log.update(session_log_data, 'A10')
+        # error_log.update(error_log_data, 'A10')
         date_time_log.update(date_time_log_data, 'A1')  # Log inconsistent date formats here
-
-
 
     except Exception as e:
         session_log_data.append([f"An error occurred during validation: {e}"])
@@ -230,10 +227,11 @@ def validate_master_data(master_data):
     finally:
         # Convert log lists to strings and update Google Sheets
         session_log.update(df_to_list_of_lists(pd.DataFrame(session_log_data)), 'A1')
-        error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)), 'A1')
-        date_time_log.update(df_to_list_of_lists(pd.DataFrame(date_time_log_data)), 'A1')
+        error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)), 'A30')
+        date_time_log.update(df_to_list_of_lists(pd.DataFrame(date_time_log_data)), 'A30')
 
-    return validated_data_df    
+    set_with_dataframe(validated_master_data, validated_data_df)
+    return validated_data_df
 
 
 def get_user_dates(validated_df):
@@ -241,7 +239,7 @@ def get_user_dates(validated_df):
     This function:
     - displays the date range available in master data
     - asks for input start date
-    - asks for input end date    
+    - asks for input end date
     """
     start_date = validated_df['time'].iloc[0]
     print(f"Start Date Is: {start_date}")
@@ -251,8 +249,8 @@ def get_user_dates(validated_df):
 
 def main():
     clear_all_sheets()                                       # Initialise Sheets On Load
-    master_data = load_marine_data_input_sheet()
-    validated_df = validate_master_data(master_data)
+    master_data, session_log_data, error_log_data = load_marine_data_input_sheet()
+    validated_df = validate_master_data(master_data,session_log_data, error_log_data)
     # user_input_dates = get_user_dates(validated_df)
     # print(f"User Dates Provided: {user_input_dates}")
 
