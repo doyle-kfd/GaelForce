@@ -45,25 +45,24 @@ def clear_all_sheets():
 
 
 def load_marine_data_input_sheet():
-    # Open Session log for recording output
-    # write session headers to session log and error log
-    session_log.update([['Session Log Started']], 'A1')
-    error_log.update([['Error Log Started']], 'A1')
-    log_timestamp = pd.Timestamp.now()
-    session_log.update([['{}'.format(log_timestamp)]], 'F1')
-    error_log.update([['{}'.format(log_timestamp)]], 'F1')
+    # Initialise log lists
+    session_log_data = [['Session Log Started'], [str(pd.Timestamp.now())]]
+    error_log_data = [['Error Log Started'], [str(pd.Timestamp.now())]]
+
+    # Write start log data to session and error logs
+    session_log.update(session_log_data, 'A1')
+    error_log.update(error_log_data, 'A1')
 
     # write - start loading master data
-    print("Loading Master Data\n")
-    session_log.update([['Master Data Started Loading']], 'A3')
-    log_timestamp = pd.Timestamp.now()
-    session_log.update([['{}'.format(log_timestamp)]], 'F3')
-    master_data = unvalidated_master_data.get_all_values()                       # assign all values in master data to variable for use
-    session_log.update([['Master Data Finished Loading']], 'A4')
-    log_timestamp = pd.Timestamp.now()
-    session_log.update([['{}'.format(log_timestamp)]], 'F4')
+    print("\nLoading Master Data\n")
+    session_log_data.append(['Master Data Started Loading'])
+    session_log_data.append([str(pd.Timestamp.now())])
+    
+    master_data = unvalidated_master_data.get_all_values()
+    
+    session_log_data.append(['Master Data Finished Loading'])
+    session_log_data.append([str(pd.Timestamp.now())])
     print("Master Data Load Completed\n")
-    return master_data
 
 
 def check_for_outliers(df):
@@ -87,6 +86,9 @@ def validate_master_data(master_data):
     - Inconsistancy
     I create a dataframe taking input from the marine_data_m2 masterdata.
     """
+
+    print("\nStarting Data Validation Process\n")
+
     # Write a heading to the error log in google sheets with time/date stamp
     try:
         # Create dataframe to work with
