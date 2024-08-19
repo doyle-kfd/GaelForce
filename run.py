@@ -2,6 +2,7 @@ import gspread
 import pandas as pd
 import numpy as np
 from google.oauth2.service_account import Credentials
+from gspread_dataframe import set_with_dataframe
 from scipy.stats import zscore
 
 
@@ -387,8 +388,9 @@ def validate_master_data(master_data):
             print("All time values are in the correct format.")
     
             # Convert and reformat the time column
-            no_duplicates_df['time'] = pd.to_datetime(no_duplicates_df['time'], format='%Y-%m-%dT%H:%M:%SZ')
-            no_duplicates_df['time'] = no_duplicates_df['time'].dt.strftime('%d-%m-%y')
+            validated_data_df = no_duplicates_df[no_duplicates_df['time'].str.match(pattern)].copy()
+            validated_data_df['time'] = pd.to_datetime(validated_data_df['time'], format='%Y-%m-%dT%H:%M:%SZ')
+            validated_data_df['time'] = validated_data_df['time'].dt.strftime('%d-%m-%Y %H:%M:%S')
     
             print("Time values have been reformatted to 'DD-MM-YY'.")
         else:
@@ -402,26 +404,28 @@ def validate_master_data(master_data):
                 row_data = row.tolist()
                 date_time_log.update([row_data], f'A{start_row}')  # Update error log with the row data
 
+                # Move to the next row in the error log
+                start_row += 1
+
+            
+            validated_data_df = no_duplicates_df[no_duplicates_df['time'].str.match(pattern)].copy()
+            validated_data_df['time'] = pd.to_datetime(validated_data_df['time'], format='%Y-%m-%dT%H:%M:%SZ')
+            validated_data_df['time'] = validated_data_df['time'].dt.strftime('%d-%m-%Y %H:%M:%S')
 
             print(f"Processing row {i+1} with data: {row_data}")
 
-            # Move to the next row in the error log
-            start_row += 1
 
 
 
-        """
+        # Display the new DataFrame
+        print(validated_data_df)
 
-        # print(values_validated_df)
-        print("\n\n\n\n\n")
-        print(no_duplicates_df['time'])
-        print("\n\n\n\n\n")
-
-        """
+        # Write the DataFrame to the sheet
+        set_with_dataframe(validated_master_data, validated_data_df)
 
         print("End of data validation\n")
 
-        return no_duplicates_df
+        return validated_data_df
 
 
         
