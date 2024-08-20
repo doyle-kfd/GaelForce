@@ -25,7 +25,7 @@ validated_master_data = SHEET.worksheet('validated_master_data')                
 user_data_report = SHEET.worksheet('user_data_report')                           # Sheet containing requested data output
 session_log = SHEET.worksheet('session_log')                                     # Errors sent to log
 error_log = SHEET.worksheet('gael_force_error_log')                              # Errors sent to log
-date_time_log = SHEET.worksheet('date_time')                                    # Date Time format error log
+date_time_log = SHEET.worksheet('date_time')                                     # Date Time format error log
 
 # define the sheets to be user for outlier output
 atmos_outlier_log = SHEET.worksheet('atmos_outliers')
@@ -280,8 +280,8 @@ def get_user_dates(validated_df):
     validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%YT%H:%M:%S')
 
     # Get the first and last dates available in the data frame
-    df_first_date = validated_df['time'].min().strftime('%d-%m-%YT%H:%M%S')
-    df_last_date = validated_df['time'].max().strftime('%d-%m-%YT%H:%M:%S')
+    df_first_date = validated_df['time'].min().strftime('%d-%m-%Y')
+    df_last_date = validated_df['time'].max().strftime('%d-%m-%Y')
     print(f"First Date: {df_first_date}")
     print(f"Last Date: {df_last_date}")
 
