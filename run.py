@@ -158,6 +158,7 @@ def validate_master_data(master_data, session_log_data, error_log_data):
             session_log_data.append([str(pd.Timestamp.now())])
             missing_values_removed_df = master_df.dropna()
             missing_values = missing_values_removed_df.isnull().sum()
+            print("     Rows with missing data have been removed")
 
         print("Validating missing values completed     <<<<<\n\n\n")
 
@@ -241,6 +242,7 @@ def validate_master_data(master_data, session_log_data, error_log_data):
             validated_data_df['time'] = pd.to_datetime(validated_data_df['time'], format='%Y-%m-%dT%H:%M:%SZ')
             validated_data_df['time'] = validated_data_df['time'].dt.strftime('%d-%m-%Y %H:%M:%S')
 
+        print("     Incorrect Date Formats Removed\n")
         print("Date Validation Completed     <<<<<\n")
         session_log_data.append(['Data Validation Ended <<<<<<<<<<'])
         session_log_data.append([str(pd.Timestamp.now())])
