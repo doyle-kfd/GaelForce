@@ -330,7 +330,7 @@ def get_user_dates(validated_df):
 
     # Prompt user for start date, dont go to end date until date is acceptable and formatted
     while True:
-        user_input_start_date = input(f"Please enter the start date (in the format 'dd-mm-yyyy' within {df_first_date} and {df_last_date}): ")
+        user_input_start_date = input(f"Please enter the start date\n (in the format 'dd-mm-yyyy'\nwithin {df_first_date} and {df_last_date}): ")
         try:
             user_input_start_date = validate_input_dates(user_input_start_date, "start")
             break  # Exit loop if the date is valid
@@ -339,7 +339,7 @@ def get_user_dates(validated_df):
 
     # Prompt user for end date
     while True:
-        user_input_end_date = input(f"Please enter the end date (in the format 'dd-mm-yyyy' within {df_first_date} and {df_last_date}): ")
+        user_input_end_date = input(f"Please enter the end date\n (in the format 'dd-mm-yyyy'\n within {df_first_date} and {df_last_date}): ")
         try:
             user_input_end_date = validate_input_dates(user_input_end_date, "end")
             if user_input_end_date < user_input_start_date:
@@ -375,18 +375,17 @@ def data_initialisation_and_validation():
     clear_all_sheets()                                                                    # Initialise Sheets On Load
     master_data, session_log_data, error_log_data = load_marine_data_input_sheet()        # Load the marine date for validation
     validated_df = validate_master_data(master_data, session_log_data, error_log_data)    # Create a validated data frame for use in the app
-
-
-def convert_date():
-    """
-    Function creates a date string given the format
-    """
-    try:
-        date = pd.to_datetime(date_str, format=from_format)
-    except ValueError:
-        raise ValueError(f"Date conversion error: Invalid date or format.")
+    print("Validated DF\n\n\n")
+    print(validated_df)
 
 def main():
+    """
+    Main function that controls all the functionality of the application
+    - Loading Master Data
+    - Data validation
+    - Getting user input for date ranges
+    - Filtering the dataframe based on date ranges from user
+    """
     global validated_df  # status of validated_df
 
     # Check to see if the data has been validated
@@ -394,20 +393,25 @@ def main():
         print("Error: Data has not been validated")
         return  # Exit the function early if validation is not done
 
+    # Get dates from user to interrogate validated data frame
+    user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
+    print(validated_df['time'])
+
+
     # Convert user input dates to the format used in validated_df
-    user_input_start_date = convert_date_format(user_input_start_date_str, '%d-%m-%Y', '%Y-%m-%d')
-    user_input_end_date = convert_date_format(user_input_end_date_str, '%d-%m-%Y', '%Y-%m-%d')
+    user_input_start_date = user_input_start_date_str
+    user_input_end_date = user_input_end_date_str
+    print(f"Start Date: {user_input_start_date}")
+    print(f"Start Date: {user_input_end_date}")
 
-
-    user_input_start_date = convert_date(user_input_end_date_str, )
 
     # Create a date filter for data selection dataframe
     date_filtered_df = validated_df [
-        (validated_df['time'] >= user_input_start_date_str) &
-        (validated_df['time'] <= user_input_end_date_str)
+        (validated_df['time'] >= user_input_start_date) &
+        (validated_df['time'] <= user_input_end_date)
     ]
     print("Date Filter For Data Selection:")
-    print(date_filtered_df.head())
+    print(date_filtered_df)
 
 
 
