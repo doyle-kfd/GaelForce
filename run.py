@@ -25,13 +25,14 @@ validated_master_data = SHEET.worksheet('validated_master_data')                
 user_data_report = SHEET.worksheet('user_data_report')                           # Sheet containing requested data output
 session_log = SHEET.worksheet('session_log')                                     # Errors sent to log
 error_log = SHEET.worksheet('gael_force_error_log')                              # Errors sent to log
-date_time_log =  SHEET.worksheet('date_time')                                    # Date Time format error log
+date_time_log = SHEET.worksheet('date_time')                                    # Date Time format error log
 
 # define the sheets to be user for outlier output
 atmos_outlier_log = SHEET.worksheet('atmos_outliers')
-wind_outlier_log =  SHEET.worksheet('wind_outliers')
-wave_outlier_log =  SHEET.worksheet('wave_outliers')
-temp_outlier_log =  SHEET.worksheet('temp_outliers')
+wind_outlier_log = SHEET.worksheet('wind_outliers')
+wave_outlier_log = SHEET.worksheet('wave_outliers')
+temp_outlier_log = SHEET.worksheet('temp_outliers')
+
 
 def df_to_list_of_lists(df):
     """
@@ -59,11 +60,10 @@ def clear_all_sheets():
     print("Finished Google Sheet Initialisation\n")
 
 
-
 def load_marine_data_input_sheet():
     """
     Function to Initialise the session log and the error logs
-    Then the master data dataframe is populated with the values 
+    Then the master data dataframe is populated with the values
     of the master data google sheet
     """
     # Initialise log lists
@@ -79,7 +79,6 @@ def load_marine_data_input_sheet():
     print("     Master Data Loading Start")
     master_data = unvalidated_master_data.get_all_values()
     print("     Master Data Loading Complete\n")
-    
     session_log_data.append(['Master Data Finished Loading'])
     session_log_data.append([str(pd.Timestamp.now())])
     print("Master Data Load Completed     <<<<<\n")
@@ -94,7 +93,7 @@ def check_for_outliers(df):
     using Z-Score method
     """
     z_scores = zscore(df)                            # calculate a z score for all values in dataframe
-    abs_z_scores = abs(z_scores)                     # take the absolute value 
+    abs_z_scores = abs(z_scores)                     # take the absolute value
     outliers = (abs_z_scores > 3).any(axis=1)        # creates a bolean based on whether the absolute number is  > 3
     return df[outliers]                              # return the dataframe of the outliers identified
 
@@ -125,7 +124,6 @@ def validate_master_data(master_data, session_log_data, error_log_data):
                         'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',
                         'MeanWaveDirection', 'AirTemperature', 'SeaTemperature', 'RelativeHumidity']]
 
-        
         session_log_data.append(['Data Validation Started <<<<<<<<<<'])
         session_log_data.append([str(pd.Timestamp.now())])
 
@@ -162,7 +160,6 @@ def validate_master_data(master_data, session_log_data, error_log_data):
 
         print("Validating missing values completed     <<<<<\n\n\n")
 
-
         # Check for duplicate rows
         print("Validating duplicates started       <<<<<\n")
         duplicates_found = missing_values_removed_df.duplicated(keep=False).sum()
@@ -176,13 +173,10 @@ def validate_master_data(master_data, session_log_data, error_log_data):
 
             # Format duplicates_df for column-wise insertion
             duplicates_list_of_lists = duplicates_df.values.tolist()
-            
             # Add header for duplicates (optional)
             duplicates_header = [duplicates_df.columns.tolist()]
-            
             # Combine header and data
             formatted_duplicates = duplicates_header + duplicates_list_of_lists
-            
             # Append to the error log data
             error_log_data.append(['Duplicate Rows Data'])
             error_log_data.extend(formatted_duplicates)
@@ -267,10 +261,7 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)), 'A1')
         date_time_log.update(df_to_list_of_lists(pd.DataFrame(date_time_log_data)), 'A1')
 
-    
     print("\nData Validation Completed     <<<<<\n\n\n")
-
-
     print("Validated Data Writing To Google Sheets Started      <<<<<\n")
     set_with_dataframe(validated_master_data, validated_data_df)
     print("Validated Data Writing To Google Sheets Completed    <<<<<\n")
@@ -294,7 +285,7 @@ def get_user_dates(validated_df):
 def main():
     clear_all_sheets()                                       # Initialise Sheets On Load
     master_data, session_log_data, error_log_data = load_marine_data_input_sheet()
-    validated_df = validate_master_data(master_data,session_log_data, error_log_data)
+    validated_df = validate_master_data(master_data, session_log_data, error_log_data)
 
     # user_input_dates = get_user_dates(validated_df)
     # print(f"User Dates Provided: {user_input_dates}")
