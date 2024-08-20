@@ -282,8 +282,7 @@ def get_user_dates(validated_df):
     # Get the first and last dates available in the data frame
     df_first_date = validated_df['time'].min().strftime('%d-%m-%Y')
     df_last_date = validated_df['time'].max().strftime('%d-%m-%Y')
-    print(f"First Date: {df_first_date}")
-    print(f"Last Date: {df_last_date}")
+    print(f"Available data range: {df_first_date} to {df_last_date}")
 
     def validate_input_dates(date_str, reference):
         """
@@ -293,6 +292,18 @@ def get_user_dates(validated_df):
         try:
             # Convert the input to a datetime object
             date = pd.to_datetime(date_str, format='%d-%m-%Y')
+
+            # Extract day, month, and year to perform further checks
+            day, month, year = date_str.split('-')
+            day = int(day)
+            month = int(month)
+            year = int(year)
+
+
+            # Check if the day is valid for the given month
+            if day > calendar.monthrange(year, month)[1]:
+                raise ValueError(f"Invalid day {day} for the month {month}. Maximum days: {calendar.monthrange(year, month)[1]}")
+            # Check to see if 
             # Ensure the date falls within the available range
             if date < pd.to_datetime(df_first_date) or date > pd.to_datetime(df_last_date):
                 raise ValueError(f"Date {date_str} is outside the available data range.")
@@ -301,20 +312,20 @@ def get_user_dates(validated_df):
             raise ValueError(f"Invalid date format or out of range: {date_str}. Please enter the date in 'dd-mm-yyyy' format within {df_first_date} and {df_last_date}.")
 
 
-        # Prompt user for start date, dont go to end date until date is acceptable and formatted
-        while True:
-            user_input_start_date = input(f"Please enter the start date (in the format 'dd-mm-yyyy' within {df_first_date} and {df_last_date}): ")
+    # Prompt user for start date, dont go to end date until date is acceptable and formatted
+    while True:
+        user_input_start_date = input(f"Please enter the start date (in the format 'dd-mm-yyyy' within {df_first_date} and {df_last_date}): ")
         try:
-            user_input_start_date = validate_date(user_input_start_date, "start")
+            user_input_start_date = validate_input_dates(user_input_start_date, "start")
             break  # Exit loop if the date is valid
         except ValueError as e:
             print(e)  # Print error message and prompt again
 
-        # Prompt user for end date
-        while True:
-            user_input_end_date = input(f"Please enter the end date (in the format 'dd-mm-yyyy' within {df_first_date} and {df_last_date}): ")
+    # Prompt user for end date
+    while True:
+        user_input_end_date = input(f"Please enter the end date (in the format 'dd-mm-yyyy' within {df_first_date} and {df_last_date}): ")
         try:
-            user_input_end_date = validate_date(user_input_end_date, "end")
+            user_input_end_date = validate_input_dates(user_input_end_date, "end")
             if user_input_end_date < user_input_start_date:
                 raise ValueError("The end date cannot be earlier than the start date.")
             break  # Exit loop if the date is valid
@@ -323,14 +334,10 @@ def get_user_dates(validated_df):
         
 
 
-    # Convert user input to datetime
-    user_input_start_date = pd.to_datetime(user_input_start_date, format='%d-%m-%YT%H:%M:%S')
-    user_input_end_date = pd.to_datetime(user_input_end_date, format='%d-%m-%YT%H:%M:%S')
+    # Convert validated start and end dates to string format for further processing
+    user_input_start_date_str = user_input_start_date.strftime('%d-%m-%Y')
+    user_input_end_date_str = user_input_end_date.strftime('%d-%m-%Y')
 
-
-    # Convert user input start and end dates to strings in format dd-mm-yyyyT00:00:00
-    user_input_start_date_str = user_input_start_date.strftime('%d-%m-%YT%H:%M:%S')
-    user_input_end_date_str = user_input_end_date.strftime('%d-%m-%YT%H:%M:%S')
 
     return user_input_start_date_str, user_input_end_date_str
 
@@ -355,13 +362,17 @@ def data_initialisation_and_validation():
 
 
 def main():
-    global validated_df                                                                   # status of validated_df
+    global validated_df  # status of validated_df
+
     # Check to see if the data has been validated
     if validated_df is None:
-        print("Errror: Data has not been validated")
+        print("Error: Data has not been validated")
+        return  # Exit the function early if validation is not done
 
+    # If validated_df exists, proceed to get user dates
     user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
     print(f"User Dates Provided: {user_input_start_date_str} and {user_input_end_date_str}")
+
 
 
 # Initialise the sheets and validate the data
