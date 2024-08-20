@@ -299,7 +299,7 @@ def get_user_dates(validated_df):
 
     if user_input_start_date > user_input_end_date:
         raise ValueError("The start date cannot be after the end date.")
- 
+
     # Convert user input start and end dates to strings in format dd-mm-yyyyT00:00:00
     user_input_start_date_str = user_input_start_date.strftime('%d-%m-%YT%H:%M:%S')
     user_input_end_date_str = user_input_end_date.strftime('%d-%m-%YT%H:%M:%S')
@@ -309,6 +309,7 @@ def get_user_dates(validated_df):
 
 # Initialise the validated dataframe
 validated_df = None
+
 
 def data_initialisation_and_validation():
     """
@@ -325,17 +326,18 @@ def data_initialisation_and_validation():
     validated_df = validate_master_data(master_data, session_log_data, error_log_data)    # Create a validated data frame for use in the app
 
 
-
 def main():
     global validated_df                                                                   # status of validated_df
     # Check to see if the data has been validated
-    if validated_df is None:                                       
+    if validated_df is None:
         print("Errror: Data has not been validated")
 
     user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
     print(f"User Dates Provided: {user_input_start_date_str} and {user_input_end_date_str}")
 
+
 # Initialise the sheets and validate the data
 data_initialisation_and_validation()
+
 
 main()
