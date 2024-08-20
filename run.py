@@ -311,7 +311,14 @@ def get_user_dates(validated_df):
             if month in [4, 6, 9, 11] and day > 30:
                 raise ValueError(f"Month {month} only has 30 days.")
 
-            
+            # Allow for leap year input
+            if month == 2:
+                if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0):
+                    if day > 29:
+                        raise ValueError("February in a leap year has only 29 days.")
+                else:
+                    if day > 28:
+                        raise ValueError("February has only 28 days in a non-leap year.")
 
             # Check if the day is valid for the given month
             if day > calendar.monthrange(year, month)[1]:
