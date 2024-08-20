@@ -265,8 +265,14 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)), 'A1')
         date_time_log.update(df_to_list_of_lists(pd.DataFrame(date_time_log_data)), 'A1')
 
+    
+    print("\nData Validation Completed     <<<<<\n\n\n")
+
+
+    print("Validated Data Writing To Google Sheets Started      <<<<<\n")
     set_with_dataframe(validated_master_data, validated_data_df)
-    print("\nData Validation Completed     <<<<<\n")
+    print("Validated Data Writing To Google Sheets Completed    <<<<<\n")
+
     return validated_data_df
 
 
