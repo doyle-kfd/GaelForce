@@ -394,9 +394,12 @@ def main():
         print("Error: Data has not been validated")
         return  # Exit the function early if validation is not done
 
-    # If validated_df exists, proceed to get user dates
-    user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
-    print(f"User Dates Provided: {user_input_start_date_str} and {user_input_end_date_str}")
+    # Convert user input dates to the format used in validated_df
+    user_input_start_date = convert_date_format(user_input_start_date_str, '%d-%m-%Y', '%Y-%m-%d')
+    user_input_end_date = convert_date_format(user_input_end_date_str, '%d-%m-%Y', '%Y-%m-%d')
+
+
+    user_input_start_date = convert_date(user_input_end_date_str, )
 
     # Create a date filter for data selection dataframe
     date_filtered_df = validated_df [
