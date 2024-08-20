@@ -303,6 +303,11 @@ def get_user_dates(validated_df):
             if month < 1 or month > 12:
                 raise ValueError("Month must be between 1 and 12.")
 
+            # Check the number of days in the month within range 1 -31
+            if day < 1 or day > 31:
+                raise ValueError("Day must be between 1 and 31.")
+
+            
 
             # Check if the day is valid for the given month
             if day > calendar.monthrange(year, month)[1]:
