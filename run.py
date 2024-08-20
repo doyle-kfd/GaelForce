@@ -138,7 +138,7 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         # If there are missing values, write to the session log and error log
         if missing_values.any():
             print("     We found rows with missing values")
-            print("     Please check the error log\n")
+            print("     Please check the error log")
             session_log_data.append(['We found missing values in the master data'])
             session_log_data.append([str(pd.Timestamp.now())])
             error_log_data.append(['Missing Values       <<<<<'])
@@ -156,7 +156,7 @@ def validate_master_data(master_data, session_log_data, error_log_data):
             session_log_data.append([str(pd.Timestamp.now())])
             missing_values_removed_df = master_df.dropna()
             missing_values = missing_values_removed_df.isnull().sum()
-            print("     Rows with missing data have been removed")
+            print("     Rows with missing data have been removed\n")
 
         print("Validating missing values completed     <<<<<\n\n\n")
 
@@ -227,14 +227,14 @@ def validate_master_data(master_data, session_log_data, error_log_data):
             print("     No Incorrect Date Formats Found")
             validated_data_df = no_duplicates_df.copy()
             validated_data_df['time'] = pd.to_datetime(validated_data_df['time'], format='%Y-%m-%dT%H:%M:%SZ')
-            validated_data_df['time'] = validated_data_df['time'].dt.strftime('%d-%m-%Y %H:%M:%S')
+            validated_data_df['time'] = validated_data_df['time'].dt.strftime('%d-%m-%YT%H:%M:%S')
         else:
             print("     Incorrect Date Formats Found\n")
             date_time_log_data.append(['Inconsistent Date and Time Formats'])
             date_time_log_data.append(inconsistent_date_format['time'].fillna('').astype(str).values.tolist())
             validated_data_df = no_duplicates_df[no_duplicates_df['time'].str.match(date_time_pattern)].copy()
             validated_data_df['time'] = pd.to_datetime(validated_data_df['time'], format='%Y-%m-%dT%H:%M:%SZ')
-            validated_data_df['time'] = validated_data_df['time'].dt.strftime('%d-%m-%Y %H:%M:%S')
+            validated_data_df['time'] = validated_data_df['time'].dt.strftime('%d-%m-%YT%H:%M:%S')
 
         print("     Incorrect Date Formats Removed\n")
         print("Date Validation Completed     <<<<<\n")
@@ -262,9 +262,9 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         date_time_log.update(df_to_list_of_lists(pd.DataFrame(date_time_log_data)), 'A1')
 
     print("\nData Validation Completed     <<<<<\n\n\n")
-    print("Validated Data Writing To Google Sheets Started      <<<<<\n")
+    print("Writing Validated Data To Google Sheets Started      <<<<<\n")
     set_with_dataframe(validated_master_data, validated_data_df)
-    print("Validated Data Writing To Google Sheets Completed    <<<<<\n")
+    print("Writing Validated Data To Google Sheets Completed    <<<<<\n")
 
     return validated_data_df
 
@@ -277,9 +277,34 @@ def get_user_dates(validated_df):
     - asks for input end date
     """
     # Convert the time column in validated_df to date time
-    validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%Y %H:%M:%S')
-    validated_df['time'] = validated_df['time'].dt.strftime('%d-%m-%Y')
-    print(validated_df['time'])
+    validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%YT%H:%M:%S')
+
+    # Get the first and last dates available in the data frame
+    df_first_date = validated_df['time'].min().strftime('%d-%m-%YT%H:%M%S')
+    df_last_date = validated_df['time'].max().strftime('%d-%m-%YT%H:%M:%S')
+    print(f"First Date: {df_first_date}")
+    print(f"Last Date: {df_last_date}")
+
+    # Ask user to input start date and end date within the available range
+    user_input_start_date = input(f"Please enter a start date\n In the format dd-mm-yyyyT00:00:00\n (within {df_first_date} and {df_last_date}): ")
+    user_input_end_date = input(f"Please enter an end date\n In the format dd-mm-yyyyT00:00:00\n (within {df_first_date} and {df_last_date}): ")
+
+    # Convert user input to datetime
+    user_input_start_date = pd.to_datetime(user_input_start_date, format='%d-%m-%YT%H:%M:%S')
+    user_input_end_date = pd.to_datetime(user_input_end_date, format='%d-%m-%YT%H:%M:%S')
+
+    # Check if the input dates are within the range
+    if user_input_start_date < validated_df['time'].min() or user_input_end_date > validated_df['time'].max():
+        raise ValueError("The dates provided are outside the available range.")
+
+    if user_input_start_date > user_input_end_date:
+        raise ValueError("The start date cannot be after the end date.")
+ 
+    # Convert user input start and end dates to strings in format dd-mm-yyyyT00:00:00
+    user_input_start_date_str = user_input_start_date.strftime('%d-%m-%YT%H:%M:%S')
+    user_input_end_date_str = user_input_end_date.strftime('%d-%m-%YT%H:%M:%S')
+
+    return user_input_start_date_str, user_input_end_date_str
 
 
 # Initialise the validated dataframe
@@ -307,8 +332,8 @@ def main():
     if validated_df is None:                                       
         print("Errror: Data has not been validated")
 
-    user_input_dates = get_user_dates(validated_df)
-    print(f"User Dates Provided: {user_input_dates}")
+    user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
+    print(f"User Dates Provided: {user_input_start_date_str} and {user_input_end_date_str}")
 
 # Initialise the sheets and validate the data
 data_initialisation_and_validation()
