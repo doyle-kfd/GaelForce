@@ -285,6 +285,21 @@ def get_user_dates(validated_df):
     print(f"First Date: {df_first_date}")
     print(f"Last Date: {df_last_date}")
 
+    def validate_input_dates(date_str, reference):
+        """
+        function to take input values for start date and end date
+        checking to see they are within the ranges available
+        """
+        try:
+            # Convert the input to a datetime object
+            date = pd.to_datetime(date_str, format='%d-%m-%Y')
+            # Ensure the date falls within the available range
+            if date < pd.to_datetime(df_first_date) or date > pd.to_datetime(df_last_date):
+                raise ValueError(f"Date {date_str} is outside the available data range.")
+            return date
+        except ValueError:
+            raise ValueError(f"Invalid date format or out of range: {date_str}. Please enter the date in 'dd-mm-yyyy' format within {df_first_date} and {df_last_date}.")
+
     # Ask user to input start date and end date within the available range
     user_input_start_date = input(f"Please enter a start date\n In the format dd-mm-yyyyT00:00:00\n (within {df_first_date} and {df_last_date}): ")
     user_input_end_date = input(f"Please enter an end date\n In the format dd-mm-yyyyT00:00:00\n (within {df_first_date} and {df_last_date}): ")
@@ -293,12 +308,6 @@ def get_user_dates(validated_df):
     user_input_start_date = pd.to_datetime(user_input_start_date, format='%d-%m-%YT%H:%M:%S')
     user_input_end_date = pd.to_datetime(user_input_end_date, format='%d-%m-%YT%H:%M:%S')
 
-    # Check if the input dates are within the range
-    if user_input_start_date < validated_df['time'].min() or user_input_end_date > validated_df['time'].max():
-        raise ValueError("The dates provided are outside the available range.")
-
-    if user_input_start_date > user_input_end_date:
-        raise ValueError("The start date cannot be after the end date.")
 
     # Convert user input start and end dates to strings in format dd-mm-yyyyT00:00:00
     user_input_start_date_str = user_input_start_date.strftime('%d-%m-%YT%H:%M:%S')
