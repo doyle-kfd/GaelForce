@@ -377,6 +377,15 @@ def data_initialisation_and_validation():
     validated_df = validate_master_data(master_data, session_log_data, error_log_data)    # Create a validated data frame for use in the app
 
 
+def convert_date():
+    """
+    Function creates a date string given the format
+    """
+    try:
+        date = pd.to_datetime(date_str, format=from_format)
+    except ValueError:
+        raise ValueError(f"Date conversion error: Invalid date or format.")
+
 def main():
     global validated_df  # status of validated_df
 
@@ -394,7 +403,8 @@ def main():
         (validated_df['time'] >= user_input_start_date_str) &
         (validated_df['time'] <= user_input_end_date_str)
     ]
-    print(f"Date Filter For Data Selection:\n {date_filtered_df}")
+    print("Date Filter For Data Selection:")
+    print(date_filtered_df.head())
 
 
 
