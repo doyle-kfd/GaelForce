@@ -320,17 +320,13 @@ def get_user_dates(validated_df):
                     if day > 28:
                         raise ValueError("February has only 28 days in a non-leap year.")
 
-            # Check if the day is valid for the given month
-            if day > calendar.monthrange(year, month)[1]:
-                raise ValueError(f"Invalid day {day} for the month {month}. Maximum days: {calendar.monthrange(year, month)[1]}")
-            # Check to see if 
             # Ensure the date falls within the available range
             if date < pd.to_datetime(df_first_date) or date > pd.to_datetime(df_last_date):
                 raise ValueError(f"Date {date_str} is outside the available data range.")
             return date
-        except ValueError:
-            raise ValueError(f"Invalid date format or out of range: {date_str}. Please enter the date in 'dd-mm-yyyy' format within {df_first_date} and {df_last_date}.")
-
+        except ValueError as ve:
+            # Re-raise the error with a custom message
+            raise ValueError(f"Invalid date: {ve}. Please enter the date in 'dd-mm-yyyy' format.")
 
     # Prompt user for start date, dont go to end date until date is acceptable and formatted
     while True:
@@ -392,6 +388,13 @@ def main():
     # If validated_df exists, proceed to get user dates
     user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
     print(f"User Dates Provided: {user_input_start_date_str} and {user_input_end_date_str}")
+
+    # Create a date filter for data selection dataframe
+    date_filtered_df = validated_df [
+        (validated_df['time'] >= user_input_start_date_str) &
+        (validated_df['time'] <= user_input_end_date_str)
+    ]
+    print(f"Date Filter For Data Selection:\n {date_filtered_df}")
 
 
 
