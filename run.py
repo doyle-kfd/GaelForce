@@ -76,9 +76,9 @@ def load_marine_data_input_sheet():
     session_log_data.append([str(pd.Timestamp.now())])
 
     # Create Dataframe with all data from google input sheet
-    print("Master Data Loading Start")
+    print("     Master Data Loading Start")
     master_data = unvalidated_master_data.get_all_values()
-    print("Master Data Loading Complete\n")
+    print("     Master Data Loading Complete\n")
     
     session_log_data.append(['Master Data Finished Loading'])
     session_log_data.append([str(pd.Timestamp.now())])
@@ -139,8 +139,8 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         missing_values = master_df.isnull().sum()
         # If there are missing values, write to the session log and error log
         if missing_values.any():
-            print("  We found rows with missing values")
-            print("  Please check the error log\n")
+            print("     We found rows with missing values")
+            print("     Please check the error log\n")
             session_log_data.append(['We found missing values in the master data'])
             session_log_data.append([str(pd.Timestamp.now())])
             error_log_data.append(['Missing Values       <<<<<'])
@@ -166,8 +166,8 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         print("Validating duplicates started       <<<<<\n")
         duplicates_found = missing_values_removed_df.duplicated(keep=False).sum()
         if duplicates_found:
-            print(f" There are {duplicates_found} duplicates in the working data set")
-            print(" Please check the error log")
+            print(f"     There are {duplicates_found} duplicates in the working data set")
+            print("     Please check the error log")
             session_log_data.append([f'Duplicates found in data set: {duplicates_found}'])
             session_log_data.append([str(pd.Timestamp.now())])
             error_log_data.append(['Duplicate Rows Found'])
@@ -186,7 +186,7 @@ def validate_master_data(master_data, session_log_data, error_log_data):
             error_log_data.append(['Duplicate Rows Data'])
             error_log_data.extend(formatted_duplicates)
             no_duplicates_df = missing_values_removed_df.drop_duplicates(keep='first')
-            print(" Duplicates have been removed\n")
+            print("     Duplicates have been removed\n")
         else:
             print("     No duplicates found in the working data set.\n")
             no_duplicates_df = missing_values_removed_df
@@ -208,16 +208,16 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         # Update Outlier Sheets
         if not atmospheric_outliers.empty:
             atmos_outlier_log.update(df_to_list_of_lists(atmospheric_outliers), 'A1')
-            print(" Atmospheric Outliers Were Found: Check Atmos Outlier Log")
+            print("     Atmospheric Outliers Were Found: Check Atmos Outlier Log")
         if not wind_outliers.empty:
             wind_outlier_log.update(df_to_list_of_lists(wind_outliers), 'A1')
-            print(" Wind Outliers Were Found:        Check Wind Outlier Log")
+            print("     Wind Outliers Were Found:        Check Wind Outlier Log")
         if not wave_outliers.empty:
             wave_outlier_log.update(df_to_list_of_lists(wave_outliers), 'A1')
-            print(" Wave Outliers Were Found:        Check Wave Outlier Log")
+            print("     Wave Outliers Were Found:        Check Wave Outlier Log")
         if not temp_outliers.empty:
             temp_outlier_log.update(df_to_list_of_lists(temp_outliers), 'A1')
-            print(" Temp Outliers Were Found:        Check Temp Outlier Log\n")
+            print("     Temp Outliers Were Found:        Check Temp Outlier Log\n")
 
         print("Outlier Validation Completed     <<<<<\n\n\n")
 
