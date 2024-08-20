@@ -277,7 +277,8 @@ def get_user_dates(validated_df):
     - asks for input end date
     """
     # Convert the time column in validated_df to date time
-    validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%Y')
+    validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%Y %H:%M:%S')
+    validated_df['time'] = validated_df['time'].dt.strftime('%d-%m-%Y')
     print(validated_df['time'])
 
 
@@ -301,12 +302,13 @@ def data_initialisation_and_validation():
 
 
 def main():
-    global validated_df
-    if validated_df is None:
+    global validated_df                                                                   # status of validated_df
+    # Check to see if the data has been validated
+    if validated_df is None:                                       
         print("Errror: Data has not been validated")
 
-    # user_input_dates = get_user_dates(validated_df)
-    # print(f"User Dates Provided: {user_input_dates}")
+    user_input_dates = get_user_dates(validated_df)
+    print(f"User Dates Provided: {user_input_dates}")
 
 # Initialise the sheets and validate the data
 data_initialisation_and_validation()
