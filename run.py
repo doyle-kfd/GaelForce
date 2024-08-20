@@ -310,11 +310,18 @@ def get_user_dates(validated_df):
         except ValueError as e:
             print(e)  # Print error message and prompt again
 
-
+        # Prompt user for end date
+        while True:
+            user_input_end_date = input(f"Please enter the end date (in the format 'dd-mm-yyyy' within {df_first_date} and {df_last_date}): ")
+        try:
+            user_input_end_date = validate_date(user_input_end_date, "end")
+            if user_input_end_date < user_input_start_date:
+                raise ValueError("The end date cannot be earlier than the start date.")
+            break  # Exit loop if the date is valid
+        except ValueError as e:
+            print(e)  # Print error message and prompt again
         
 
-    # Ask user to input start date and end date within the available range
-    user_input_end_date = input(f"Please enter an end date\n In the format dd-mm-yyyyT00:00:00\n (within {df_first_date} and {df_last_date}): ")
 
     # Convert user input to datetime
     user_input_start_date = pd.to_datetime(user_input_start_date, format='%d-%m-%YT%H:%M:%S')
