@@ -300,8 +300,20 @@ def get_user_dates(validated_df):
         except ValueError:
             raise ValueError(f"Invalid date format or out of range: {date_str}. Please enter the date in 'dd-mm-yyyy' format within {df_first_date} and {df_last_date}.")
 
+
+        # Prompt user for start date, dont go to end date until date is acceptable and formatted
+        while True:
+            user_input_start_date = input(f"Please enter the start date (in the format 'dd-mm-yyyy' within {df_first_date} and {df_last_date}): ")
+        try:
+            user_input_start_date = validate_date(user_input_start_date, "start")
+            break  # Exit loop if the date is valid
+        except ValueError as e:
+            print(e)  # Print error message and prompt again
+
+
+        
+
     # Ask user to input start date and end date within the available range
-    user_input_start_date = input(f"Please enter a start date\n In the format dd-mm-yyyyT00:00:00\n (within {df_first_date} and {df_last_date}): ")
     user_input_end_date = input(f"Please enter an end date\n In the format dd-mm-yyyyT00:00:00\n (within {df_first_date} and {df_last_date}): ")
 
     # Convert user input to datetime
