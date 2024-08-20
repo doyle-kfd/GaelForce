@@ -276,19 +276,39 @@ def get_user_dates(validated_df):
     - asks for input start date
     - asks for input end date
     """
-    start_date = validated_df['time'].iloc[0]
-    print(f"Start Date Is: {start_date}")
-    print(validated_df)
-    print("The dates available are:")
+    # Convert the time column in validated_df to date time
+    validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%Y')
+    print(validated_df['time'])
+
+
+# Initialise the validated dataframe
+validated_df = None
+
+def data_initialisation_and_validation():
+    """
+    This function:
+    - Clears all the sheets
+    - loads the marine data for validation
+    - Validates the data
+    - Stores the validated data for use in the session
+    Its only run once per session
+    """
+    global validated_df
+    clear_all_sheets()                                                                    # Initialise Sheets On Load
+    master_data, session_log_data, error_log_data = load_marine_data_input_sheet()        # Load the marine date for validation
+    validated_df = validate_master_data(master_data, session_log_data, error_log_data)    # Create a validated data frame for use in the app
+
 
 
 def main():
-    clear_all_sheets()                                       # Initialise Sheets On Load
-    master_data, session_log_data, error_log_data = load_marine_data_input_sheet()
-    validated_df = validate_master_data(master_data, session_log_data, error_log_data)
+    global validated_df
+    if validated_df is None:
+        print("Errror: Data has not been validated")
 
     # user_input_dates = get_user_dates(validated_df)
     # print(f"User Dates Provided: {user_input_dates}")
 
+# Initialise the sheets and validate the data
+data_initialisation_and_validation()
 
 main()
