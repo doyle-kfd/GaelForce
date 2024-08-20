@@ -299,6 +299,10 @@ def get_user_dates(validated_df):
             month = int(month)
             year = int(year)
 
+            # check to see that month is valid 1 - 12
+            if month < 1 or month > 12:
+                raise ValueError("Month must be between 1 and 12.")
+
 
             # Check if the day is valid for the given month
             if day > calendar.monthrange(year, month)[1]:
