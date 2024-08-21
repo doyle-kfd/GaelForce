@@ -468,7 +468,22 @@ def main():
     print("1: Print to Screen")
     print("2: Create Graph")
     print("3: Write to Google Sheet")
-    
+
+    # Take user's selected output number
+    output_selection = input("Enter the number corresponding to your action: ")
+    # Convert to integer
+    output_selection = int(output_selection)
+
+    # If user selects 1 - output to screen
+    if output_selection == 1:
+        # Option 1: Print to Screen
+        print("\nSelected Data:")
+        print(user_output_df)
+
+        
+
+
+
 
 
 # Initialise the sheets and validate the data
