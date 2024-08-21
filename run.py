@@ -413,6 +413,11 @@ def main():
     print("Date Filter For Data Selection:")
     print(date_filtered_df)
 
+    # Prepare date_filtered_df for use as output
+    # Change the date format from yyyy-mm-dd 00:00:00 to dd-mm-yyyy 00:00:00
+    date_filtered_df['time'] = pd.to_datetime(date_filtered_df['time']).dt.strftime(('%d-%m-%Y %H:%M:%S'))
+    print(date_filtered_df)
+
 
 
 # Initialise the sheets and validate the data
