@@ -460,8 +460,15 @@ def main():
     elif selection == 5:
         selected_columns = ['time', 'AirTemperature', 'SeaTemperature']
 
-    # Print selected columns for debugging
-    print(f"Selected Columns: {selected_columns}")   
+    # Create an output df from working data df based on users selected_columns
+    user_output_df = working_data_df[selected_columns]
+
+    # give user options for output
+    print("\nWhat would you like to do with the selected data?")
+    print("1: Print to Screen")
+    print("2: Create Graph")
+    print("3: Write to Google Sheet")
+    
 
 
 # Initialise the sheets and validate the data
