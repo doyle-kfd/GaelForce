@@ -393,6 +393,15 @@ def main():
         print("Error: Data has not been validated")
         return  # Exit the function early if validation is not done
 
+
+    # convert the time columnin df to just date for comparison drop h:m:s
+    validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%YT%H:%M:%S', errors='coerce', dayfirst=True)   
+    # Extract the date component only, ignoring the time
+    validated_df['date_only'] = validated_df['time'].dt.strftime('%d-%m-%Y')
+    
+    print(validated_df['date_only'])
+
+
     # Get dates from user to interrogate validated data frame
     user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
     print(validated_df['time'])
@@ -405,19 +414,56 @@ def main():
     print(f"Start Date: {user_input_end_date}")
 
 
-    # Create a date filter for data selection dataframe
-    date_filtered_df = validated_df [
-        (validated_df['time'] >= user_input_start_date) &
-        (validated_df['time'] <= user_input_end_date)
+    # Filter the dataframe based on the date range
+    date_filtered_df = validated_df[
+        (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') >= user_input_start_date) &
+        (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') <= user_input_end_date)
     ]
     print("Date Filter For Data Selection:")
     print(date_filtered_df)
 
     # Prepare date_filtered_df for use as output
     # Change the date format from yyyy-mm-dd 00:00:00 to dd-mm-yyyy 00:00:00
-    date_filtered_df['time'] = pd.to_datetime(date_filtered_df['time']).dt.strftime(('%d-%m-%Y %H:%M:%S'))
-    print(date_filtered_df)
+    # date_filtered_df['time'] = pd.to_datetime(date_filtered_df['time']).dt.strftime(('%d-%m-%Y %H:%M:%S'))
+    # date_filtered_df.loc[:, 'time'] = pd.to_datetime(date_filtered_df['time']).dt.strftime('%d-%m-%Y %H:%M:%S')
+    # print(date_filtered_df)
 
+    # Create a copy of date_filtered_df to avoid modifying the original DataFrame
+    data_manipulation_df = date_filtered_df.copy()
+
+    # Convert the 'time' column to the desired format in the copied DataFrame
+    fdata_manipulation_df['time'] = pd.to_datetime(data_manipulation_df['time']).dt.strftime('%d-%m-%Y %H:%M:%S')
+
+    # Now formatted_df will have the 'time' column formatted as 'dd-mm-yyyy 00:00:00'
+    print(formatted_df)
+
+    # Output Selection Options
+    print("\nSelect the data you want to display:")
+    print("1: All Data")
+    print("2: Atmospheric Pressure")
+    print("3: Wind Speed and Gust")
+    print("4: Wave Height, Wave Period, and Mean Wave Direction")
+    print("5: Air Temperature and Sea Temperature")
+
+    # take users selected number
+    selection = input("Enter the number corresponding to your selection")
+
+    # Create relevant data subset dataframes for processing
+    if selection == 1:
+        selected_columns = ['time', 'AtmosphericPressure', 'WindDirection',
+                            'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',
+                            'MeanWaveDirection', 'AirTemperature', 'SeaTemperature', 'RelativeHumidity']
+    elif selection == 2:
+        selected_columns = ['time', 'AtmosphericPressure']
+    elif selection == 3:
+        selected_columns = ['time', 'WindSpeed', 'Gust']
+    elif selection == 4:
+        selected_columns = ['time', 'WaveHeight', 'WavePeriod', 'MeanWaveDirection']
+    elif selection == 5:
+        selected_columns = ['time', 'AirTemperature', 'SeaTemperature']
+
+    # Print selected columns for debugging
+    print(f"Selected Columns: {selected_columns}")   
 
 
 # Initialise the sheets and validate the data
