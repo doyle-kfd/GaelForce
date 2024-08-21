@@ -4,6 +4,7 @@ import numpy as np
 from google.oauth2.service_account import Credentials
 from gspread_dataframe import set_with_dataframe
 from scipy.stats import zscore
+import plotly.express as px
 
 
 SCOPE = [
@@ -378,6 +379,19 @@ def data_initialisation_and_validation():
     print("Validated DF\n\n\n")
     print(validated_df)
 
+
+
+
+def user_requested_graph(df, x_col, y_cols, title):
+    """
+    Function to plot data, based on users requirements
+    """
+    fig = px.line(df, x=x_col, y=y_cols, title=title)
+    fig.update_layout(xaxis_title=x_col, yaxis_title=', '.join(y_cols))
+    fig.show()
+
+
+
 def main():
     """
     Main function that controls all the functionality of the application
@@ -479,10 +493,14 @@ def main():
         # Option 1: Print to Screen
         print("\nSelected Data:")
         print(user_output_df)
+
+    elif output_selection == 2:
+        # Option 2: Output to graph
+        user_requested_graph(user_output_df, selected_columns)
     # If user selectis 3 - output to google sheet
     elif output_selection == 3:
         # Option 3 Write Data To Google Sheet
-        set_with_dataframe(user_data_report, selected_data_df)
+        set_with_dataframe(user_data_output, user_output_df)
         print("\nData Written To Google Sheet")
 
     
