@@ -496,7 +496,13 @@ def main():
 
     elif output_selection == 2:
         # Option 2: Output to graph
-        user_requested_graph(user_output_df, selected_columns)
+        # Plotting weather data over time
+        x_col = 'time'
+        y_cols = ['AtmosphericPressure', 'WindDirection',
+                  'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',
+                  'MeanWaveDirection', 'AirTemperature', 'SeaTemperature', 'RelativeHumidity']
+        title = 'Weather Data Over Time'
+        user_requested_graph(user_output_df, x_col, y_cols, title)
     # If user selectis 3 - output to google sheet
     elif output_selection == 3:
         # Option 3 Write Data To Google Sheet
