@@ -422,20 +422,14 @@ def main():
     print("Date Filter For Data Selection:")
     print(date_filtered_df)
 
-    # Prepare date_filtered_df for use as output
-    # Change the date format from yyyy-mm-dd 00:00:00 to dd-mm-yyyy 00:00:00
-    # date_filtered_df['time'] = pd.to_datetime(date_filtered_df['time']).dt.strftime(('%d-%m-%Y %H:%M:%S'))
-    # date_filtered_df.loc[:, 'time'] = pd.to_datetime(date_filtered_df['time']).dt.strftime('%d-%m-%Y %H:%M:%S')
-    # print(date_filtered_df)
-
     # Create a copy of date_filtered_df to avoid modifying the original DataFrame
-    data_manipulation_df = date_filtered_df.copy()
+    working_data_df = date_filtered_df.copy()
 
     # Convert the 'time' column to the desired format in the copied DataFrame
-    fdata_manipulation_df['time'] = pd.to_datetime(data_manipulation_df['time']).dt.strftime('%d-%m-%Y %H:%M:%S')
+    working_data_df['time'] = pd.to_datetime(working_data_df['time']).dt.strftime('%d-%m-%Y %H:%M:%S')
 
     # Now formatted_df will have the 'time' column formatted as 'dd-mm-yyyy 00:00:00'
-    print(formatted_df)
+    print(working_data_df)
 
     # Output Selection Options
     print("\nSelect the data you want to display:")
@@ -447,7 +441,11 @@ def main():
 
     # take users selected number
     selection = input("Enter the number corresponding to your selection")
+    # convert selection to integer for use later
+    selection = int(selection)
 
+    # Initialise selection storage
+    selected_columns = []
     # Create relevant data subset dataframes for processing
     if selection == 1:
         selected_columns = ['time', 'AtmosphericPressure', 'WindDirection',
