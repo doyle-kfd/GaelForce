@@ -457,8 +457,6 @@ def main():
         (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') >= user_input_start_date) &
         (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') <= user_input_end_date)
     ]
-    print("Date Filter For Data Selection:")
-    print(date_filtered_df)
 
     # Create a copy of date_filtered_df to avoid modifying the original DataFrame
     working_data_df = date_filtered_df.copy()
@@ -467,6 +465,7 @@ def main():
     working_data_df['time'] = pd.to_datetime(working_data_df['time']).dt.strftime('%d-%m-%Y %H:%M:%S')
 
     # Now formatted_df will have the 'time' column formatted as 'dd-mm-yyyy 00:00:00'
+    print("Date For Output:")
     print(working_data_df)
 
     # Output Selection Options
@@ -500,6 +499,10 @@ def main():
 
     # Create an output df from working data df based on users selected_columns
     user_output_df = working_data_df[selected_columns]
+
+    # Display the number of rows of data in the working set
+    num_rows = len(user_output_df)
+    print(f"\nThere are {num_rows} rows of data.\n")
 
     # Create loop allowing user select different output options
     while True:
