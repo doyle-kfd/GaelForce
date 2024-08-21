@@ -388,29 +388,42 @@ def user_requested_graph(df, x_col, y_cols, title):
     fig.show()
 
 
-def get_valid_data_output_selection():
+def get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet):
     """
     Function to prompt the user for output selection and ensure that only valid numbers are allowed.
+    Its been modified for conditional logic to check of the output is
+    too large for the screen. Conidered <= 20 rows of data
+    - allow_screen controls if user can print to screen
+    - allow_graph controls if user can send datat to graph
+    - allow_sheet controls if usre can write to sheet
     """
     while True:
         # Provide user options for output
         print("\nWhat would you like to do with the selected data?")
-        print("1: Print to Screen")
-        print("2: Create Graph")
-        print("3: Write to Google Sheet")
+        # Check to see if display on screen is allowed
+        if allow_screen:
+            print("1: Print to Screen")
+        if allow_graph:
+            print("2: Create Graph")
+        if allow_sheet:
+            print("3: Write to Google Sheet")
         print("4: Exit")
         
-        user_input = input("\nEnter the number corresponding to your action: ")
+        user_input = input("\nEnter the number corresponding to your desired output: ")
         
         try:
             # Attempt to convert input to an integer
             output_selection = int(user_input)
             
             # Check if the number is within the valid range
-            if output_selection in [1, 2, 3, 4]:
+            if output_selection in [1, 2, 3, 4] and \
+                ((output_selection == 1 and allow_screen) or
+                 (output_selection == 2 and allow_graph) or
+                 (output_selection == 3 and allow_sheet) or
+                 output_selection == 4):
                 return output_selection
             else:
-                print("\n\nInvalid selection. Please enter a number between 1 and 4.\n")
+                print("\n\nInvalid selection. Please enter a valid option.\n")
         except ValueError:
             # Handle the case where conversion to integer fails
             print("\n\nInvalid input. Please enter a number.\n")
@@ -502,18 +515,34 @@ def main():
 
     # Display the number of rows of data in the working set
     num_rows = len(user_output_df)
-    print(f"\nThere are {num_rows} rows of data.\n")
+    print(f"\nThere are {num_rows} rows of data.     <<<<<\n")
+
+    # Check to see how many rows there are in the user output dataframe
+    if num_rows <= 20:
+        # If there are 20 or fewer rows, allow all actions
+        allow_screen = True
+        allow_graph = True
+        allow_sheet = True
+    else:
+        # If more than 20 rows, limit options
+        allow_screen = False
+        allow_graph = True
+        allow_sheet = True
+        print(f"\nNote: Displaying the first 20 rows. There are {num_rows - 20} more rows not displayed.")
 
     # Create loop allowing user select different output options
     while True:
         # Get the action from user with validation
-        output_selection = get_valid_data_output_selection()
+        output_selection = get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet)
 
         # If user selects 1 - output to screen
         if output_selection == 1:
-            # Option 1: Print to Screen
+            # Print the first 20 rows if more than 20
             print("\nSelected Data:")
-            print(user_output_df)
+            if num_rows > 20:
+                print(user_output_df.head(20))
+            else:
+                print(user_output_df)
         # If user selects 2 - Output goes to graph in browser
         elif output_selection == 2:
             # Option 2: Output to graph
