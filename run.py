@@ -498,9 +498,8 @@ def main():
         # Option 2: Output to graph
         # Plotting weather data over time
         x_col = 'time'
-        y_cols = ['AtmosphericPressure', 'WindDirection',
-                  'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',
-                  'MeanWaveDirection', 'AirTemperature', 'SeaTemperature', 'RelativeHumidity']
+        # Refactored to select columns except the time column for y axis
+        y_cols = [col for col in selected_columns if col != x_col]
         title = 'Weather Data Over Time'
         user_requested_graph(user_output_df, x_col, y_cols, title)
     # If user selectis 3 - output to google sheet
