@@ -477,42 +477,46 @@ def main():
     # Create an output df from working data df based on users selected_columns
     user_output_df = working_data_df[selected_columns]
 
-    # give user options for output
-    print("\nWhat would you like to do with the selected data?")
-    print("1: Print to Screen")
-    print("2: Create Graph")
-    print("3: Write to Google Sheet")
+    # Create loop allowing user select different output options
+    while True:
+        # give user options for output
+        print("\nWhat would you like to do with the selected data?")
+        print("1: Print to Screen")
+        print("2: Create Graph")
+        print("3: Write to Google Sheet")
+        print("4: Exit")
 
-    # Take user's selected output number
-    output_selection = input("Enter the number corresponding to your action: ")
-    # Convert to integer
-    output_selection = int(output_selection)
+        # Take user's selected output number
+        output_selection = input("Enter the number corresponding to your action: ")
+        # Convert to integer
+        output_selection = int(output_selection)
 
-    # If user selects 1 - output to screen
-    if output_selection == 1:
-        # Option 1: Print to Screen
-        print("\nSelected Data:")
-        print(user_output_df)
-
-    elif output_selection == 2:
-        # Option 2: Output to graph
-        # Plotting weather data over time
-        x_col = 'time'
-        # Refactored to select columns except the time column for y axis
-        y_cols = [col for col in selected_columns if col != x_col]
-        title = 'Weather Data Over Time'
-        user_requested_graph(user_output_df, x_col, y_cols, title)
-    # If user selectis 3 - output to google sheet
-    elif output_selection == 3:
-        # Option 3 Write Data To Google Sheet
-        set_with_dataframe(user_data_output, user_output_df)
-        print("\nData Written To Google Sheet")
-
-    
-
-
-
-
+        # If user selects 1 - output to screen
+        if output_selection == 1:
+            # Option 1: Print to Screen
+            print("\nSelected Data:")
+            print(user_output_df)
+        # If user selects 2 - Output goes to graph in browser
+        elif output_selection == 2:
+            # Option 2: Output to graph
+            # Plotting weather data over time
+            x_col = 'time'
+            # Refactored to select columns except the time column for y axis
+            y_cols = [col for col in selected_columns if col != x_col]
+            title = 'Weather Data Over Time'
+            user_requested_graph(user_output_df, x_col, y_cols, title)
+        # If user selects 3 - output to google sheet
+        elif output_selection == 3:
+            # Option 3 Write Data To Google Sheet
+            set_with_dataframe(user_data_output, user_output_df)
+            print("\nData Written To Google Sheet")
+        # If user select 4 - loop ends
+        elif output_selection == 4:
+            # Option 4 Exit the loop
+            print("Exiting......")
+            break
+        else:
+            print("Invalid selection. Please enter a number between 1 and 4.")
 
 # Initialise the sheets and validate the data
 data_initialisation_and_validation()
