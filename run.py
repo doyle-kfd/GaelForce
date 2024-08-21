@@ -379,9 +379,6 @@ def data_initialisation_and_validation():
     print("Validated DF\n\n\n")
     print(validated_df)
 
-
-
-
 def user_requested_graph(df, x_col, y_cols, title):
     """
     Function to plot data, based on users requirements
@@ -390,6 +387,33 @@ def user_requested_graph(df, x_col, y_cols, title):
     fig.update_layout(xaxis_title=x_col, yaxis_title=', '.join(y_cols))
     fig.show()
 
+
+def get_valid_data_output_selection():
+    """
+    Function to prompt the user for output selection and ensure that only valid numbers are allowed.
+    """
+    while True:
+        # Provide user options for output
+        print("\nWhat would you like to do with the selected data?")
+        print("1: Print to Screen")
+        print("2: Create Graph")
+        print("3: Write to Google Sheet")
+        print("4: Exit")
+        
+        user_input = input("\nEnter the number corresponding to your action: ")
+        
+        try:
+            # Attempt to convert input to an integer
+            output_selection = int(user_input)
+            
+            # Check if the number is within the valid range
+            if output_selection in [1, 2, 3, 4]:
+                return output_selection
+            else:
+                print("\n\nInvalid selection. Please enter a number between 1 and 4.\n")
+        except ValueError:
+            # Handle the case where conversion to integer fails
+            print("\n\nInvalid input. Please enter a number.\n")
 
 
 def main():
@@ -454,7 +478,7 @@ def main():
     print("5: Air Temperature and Sea Temperature")
 
     # take users selected number
-    selection = input("Enter the number corresponding to your selection")
+    selection = input("Enter the number corresponding to your selection: ")
     # convert selection to integer for use later
     selection = int(selection)
 
@@ -479,17 +503,8 @@ def main():
 
     # Create loop allowing user select different output options
     while True:
-        # give user options for output
-        print("\nWhat would you like to do with the selected data?")
-        print("1: Print to Screen")
-        print("2: Create Graph")
-        print("3: Write to Google Sheet")
-        print("4: Exit")
-
-        # Take user's selected output number
-        output_selection = input("Enter the number corresponding to your action: ")
-        # Convert to integer
-        output_selection = int(output_selection)
+        # Get the action from user with validation
+        output_selection = get_valid_data_output_selection()
 
         # If user selects 1 - output to screen
         if output_selection == 1:
