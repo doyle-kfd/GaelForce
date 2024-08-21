@@ -22,7 +22,7 @@ SHEET = GSPREAD_CLIENT.open('marine_data_m2')
 # define the variables used to acccess each of the sheets in the Google Sheet
 unvalidated_master_data = SHEET.worksheet('marine_data_master_data_2020_2024')   # Master Data file
 validated_master_data = SHEET.worksheet('validated_master_data')                 # Validated Master Data for use
-user_data_report = SHEET.worksheet('user_data_report')                           # Sheet containing requested data output
+user_data_output = SHEET.worksheet('user_data_output')                           # Sheet containing requested data output
 session_log = SHEET.worksheet('session_log')                                     # Errors sent to log
 error_log = SHEET.worksheet('gael_force_error_log')                              # Errors sent to log
 date_time_log = SHEET.worksheet('date_time')                                     # Date Time format error log
@@ -51,7 +51,7 @@ def clear_all_sheets():
     """
     print("Starting Google Sheet Initialisation\n")
     sheets = [
-        validated_master_data, user_data_report, session_log, error_log,
+        validated_master_data, user_data_output, session_log, error_log,
         atmos_outlier_log, wind_outlier_log, wave_outlier_log, temp_outlier_log, date_time_log
     ]
     for sheet in sheets:
@@ -479,8 +479,13 @@ def main():
         # Option 1: Print to Screen
         print("\nSelected Data:")
         print(user_output_df)
+    # If user selectis 3 - output to google sheet
+    elif output_selection == 3:
+        # Option 3 Write Data To Google Sheet
+        set_with_dataframe(user_data_report, selected_data_df)
+        print("\nData Written To Google Sheet")
 
-        
+    
 
 
 
