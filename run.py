@@ -35,6 +35,9 @@ wave_outlier_log = SHEET.worksheet('wave_outliers')
 temp_outlier_log = SHEET.worksheet('temp_outliers')
 
 
+
+
+
 def df_to_list_of_lists(df):
     """
     Function to convert dataframe into list of lists.
@@ -269,7 +272,7 @@ def validate_master_data(master_data, session_log_data, error_log_data):
 
     return validated_data_df
 
-def validate_input_dates(date_str, reference):
+def validate_input_dates(date_str, reference, df_first_date, df_last_date):
     """
     function to take input values for start date and end date
     checking to see they are within the ranges available
@@ -277,6 +280,8 @@ def validate_input_dates(date_str, reference):
     try:
         # Convert the input to a datetime object
         date = pd.to_datetime(date_str, format='%d-%m-%Y')
+        if pd.isna(date):
+            raise ValueError("Date is not in the correct format or is invalid.")
 
         # Extract day, month, and year to perform further checks
         day, month, year = date_str.split('-')
@@ -320,6 +325,8 @@ def get_user_dates(validated_df):
     - asks for input start date
     - asks for input end date
     """
+    # Declare variablse for later use
+    error_log_data = []
     # Convert the time column in validated_df to date time
     validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%YT%H:%M:%S')
 
@@ -337,12 +344,19 @@ def get_user_dates(validated_df):
         if user_input_start_date.lower() == 'quit':
             print("Exiting program as requested.")
             return None, None
-        
+
         try:
-            user_input_start_date = validate_input_dates(user_input_start_date, "start")
+            user_input_start_date = validate_input_dates(user_input_start_date, "start", df_first_date, df_last_date)
             break  # Exit loop if the date is valid
         except ValueError as e:
-            print(e)  # Print error message and prompt again
+            # Append error details to the error log and inform the user
+            error_log_data.append(["User data input validation Error <<<<<"])
+            error_log_data.append([str(pd.Timestamp.now())])
+            error_log_data.append(["Start Date Error: Invalid format"])
+            error_log_data.append([f"{e}"])
+            print("Start Date Error:\n")
+            print(f"Invalid start date input.\n A detailed description of the error\n has been appended to the error log.")
+            print("\nPlease enter the date in 'dd-mm-yyyy' format.")
 
     # Prompt user for end date
     while True:
@@ -353,19 +367,30 @@ def get_user_dates(validated_df):
             return None, None
 
         try:
-            user_input_end_date = validate_input_dates(user_input_end_date, "end")
+            user_input_end_date = validate_input_dates(user_input_end_date, "end", df_first_date, df_last_date)
             if user_input_end_date < user_input_start_date:
                 raise ValueError("The end date cannot be earlier than the start date.")
             break  # Exit loop if the date is valid
         except ValueError as e:
-            print(e)  # Print error message and prompt again
-        
-
+            # Append error details to the error log and inform the user
+            error_log_data.append(["User data input validation Error <<<<<"])
+            error_log_data.append([str(pd.Timestamp.now())])
+            error_log_data.append(["End Date Error: Invalid format"])
+            error_log_data.append([f"{e}"])
+            print(f"End Date Error:\n")
+            print(f"Invalid end date input.\n A detailed description of the error\n has been appended to the error log.")
+            print("\nPlease enter the date in 'dd-mm-yyyy' format.")
 
     # Convert validated start and end dates to string format for further processing
     user_input_start_date_str = user_input_start_date.strftime('%d-%m-%Y')
     user_input_end_date_str = user_input_end_date.strftime('%d-%m-%Y')
 
+
+
+    # Write error log to error log sheet if there are errors to be written
+    if error_log_data:
+        error_log_data = [[str(item) for item in sublist] for sublist in error_log_data]
+        error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)), 'A25')
 
     return user_input_start_date_str, user_input_end_date_str
 
