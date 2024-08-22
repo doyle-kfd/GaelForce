@@ -269,6 +269,49 @@ def validate_master_data(master_data, session_log_data, error_log_data):
 
     return validated_data_df
 
+def validate_input_dates(date_str, reference):
+    """
+    function to take input values for start date and end date
+    checking to see they are within the ranges available
+    """
+    try:
+        # Convert the input to a datetime object
+        date = pd.to_datetime(date_str, format='%d-%m-%Y')
+
+        # Extract day, month, and year to perform further checks
+        day, month, year = date_str.split('-')
+        day = int(day)
+        month = int(month)
+        year = int(year)
+
+        # check to see that month is valid 1 - 12
+        if month < 1 or month > 12:
+            raise ValueError("Month must be between 1 and 12.")
+
+        # Check the number of days in the month within range 1 -31
+        if day < 1 or day > 31:
+            raise ValueError("Day must be between 1 and 31.")
+
+        # Check that months, 4,6,9 and 11 are betwen 1 and 30
+        if month in [4, 6, 9, 11] and day > 30:
+            raise ValueError(f"Month {month} only has 30 days.")
+
+        # Allow for leap year input
+        if month == 2:
+            if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0):
+                if day > 29:
+                    raise ValueError("February in a leap year has only 29 days.")
+            else:
+                if day > 28:
+                    raise ValueError("February has only 28 days in a non-leap year.")
+
+        # Ensure the date falls within the available range
+        if date < pd.to_datetime(df_first_date) or date > pd.to_datetime(df_last_date):
+            raise ValueError(f"Date {date_str} is outside the available data range.")
+        return date
+    except ValueError as ve:
+        # Re-raise the error with a custom message
+        raise ValueError(f"Invalid date: {ve}. Please enter the date in 'dd-mm-yyyy' format.")
 
 def get_user_dates(validated_df):
     """
@@ -286,50 +329,6 @@ def get_user_dates(validated_df):
     print(f"\n\nAvailable data range: {df_first_date} to {df_last_date}\n\n")
     print("You will be asked to enter a start date and and end date")
     print("You can type 'quit' at any time to exit.\n")
-
-    def validate_input_dates(date_str, reference):
-        """
-        function to take input values for start date and end date
-        checking to see they are within the ranges available
-        """
-        try:
-            # Convert the input to a datetime object
-            date = pd.to_datetime(date_str, format='%d-%m-%Y')
-
-            # Extract day, month, and year to perform further checks
-            day, month, year = date_str.split('-')
-            day = int(day)
-            month = int(month)
-            year = int(year)
-
-            # check to see that month is valid 1 - 12
-            if month < 1 or month > 12:
-                raise ValueError("Month must be between 1 and 12.")
-
-            # Check the number of days in the month within range 1 -31
-            if day < 1 or day > 31:
-                raise ValueError("Day must be between 1 and 31.")
-
-            # Check that months, 4,6,9 and 11 are betwen 1 and 30
-            if month in [4, 6, 9, 11] and day > 30:
-                raise ValueError(f"Month {month} only has 30 days.")
-
-            # Allow for leap year input
-            if month == 2:
-                if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0):
-                    if day > 29:
-                        raise ValueError("February in a leap year has only 29 days.")
-                else:
-                    if day > 28:
-                        raise ValueError("February has only 28 days in a non-leap year.")
-
-            # Ensure the date falls within the available range
-            if date < pd.to_datetime(df_first_date) or date > pd.to_datetime(df_last_date):
-                raise ValueError(f"Date {date_str} is outside the available data range.")
-            return date
-        except ValueError as ve:
-            # Re-raise the error with a custom message
-            raise ValueError(f"Invalid date: {ve}. Please enter the date in 'dd-mm-yyyy' format.")
 
     # Prompt user for start date, dont go to end date until date is acceptable and formatted
     while True:
@@ -349,10 +348,10 @@ def get_user_dates(validated_df):
     while True:
         user_input_end_date = input(f"Please enter the end date\n (in the format 'dd-mm-yyyy'\n within {df_first_date} and {df_last_date}): ")
         # Check to see if the user wants to quit        
-        if user_input_start_date.lower() == 'quit':
+        if user_input_end_date.lower() == 'quit':
             print("Exiting program as requested.")
             return None, None
-                    
+
         try:
             user_input_end_date = validate_input_dates(user_input_end_date, "end")
             if user_input_end_date < user_input_start_date:
@@ -468,7 +467,11 @@ def main():
     while True:
         # Get dates from user to interrogate validated data frame
         user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
-        print(validated_df['time'])
+
+        # Check if user selected "quit"
+        if user_input_start_date_str is None or user_input_end_date_str is None:
+            print("\n\nDate input was canceled. Exiting program.\n\n")
+            exit()  # Exit app
 
 
         # Convert user input dates to the format used in validated_df
