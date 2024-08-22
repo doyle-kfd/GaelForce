@@ -283,7 +283,9 @@ def get_user_dates(validated_df):
     # Get the first and last dates available in the data frame
     df_first_date = validated_df['time'].min().strftime('%d-%m-%Y')
     df_last_date = validated_df['time'].max().strftime('%d-%m-%Y')
-    print(f"Available data range: {df_first_date} to {df_last_date}")
+    print(f"\n\nAvailable data range: {df_first_date} to {df_last_date}\n\n")
+    print("You will be asked to enter a start date and and end date")
+    print("You can type 'quit' at any time to exit.\n")
 
     def validate_input_dates(date_str, reference):
         """
@@ -331,7 +333,12 @@ def get_user_dates(validated_df):
 
     # Prompt user for start date, dont go to end date until date is acceptable and formatted
     while True:
-        user_input_start_date = input(f"Please enter the start date\n (in the format 'dd-mm-yyyy'\nwithin {df_first_date} and {df_last_date}): ")
+        user_input_start_date = input(f"Please enter the start date\n (in the format 'dd-mm-yyyy'\nbetween {df_first_date} and {df_last_date}): ")
+        # Check to see if the user wants to quit
+        if user_input_start_date.lower() == 'quit':
+            print("Exiting program as requested.")
+            return None, None
+        
         try:
             user_input_start_date = validate_input_dates(user_input_start_date, "start")
             break  # Exit loop if the date is valid
@@ -341,6 +348,11 @@ def get_user_dates(validated_df):
     # Prompt user for end date
     while True:
         user_input_end_date = input(f"Please enter the end date\n (in the format 'dd-mm-yyyy'\n within {df_first_date} and {df_last_date}): ")
+        # Check to see if the user wants to quit        
+        if user_input_start_date.lower() == 'quit':
+            print("Exiting program as requested.")
+            return None, None
+                    
         try:
             user_input_end_date = validate_input_dates(user_input_end_date, "end")
             if user_input_end_date < user_input_start_date:
@@ -452,123 +464,125 @@ def main():
     
     print(validated_df['date_only'])
 
-
-    # Get dates from user to interrogate validated data frame
-    user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
-    print(validated_df['time'])
-
-
-    # Convert user input dates to the format used in validated_df
-    user_input_start_date = user_input_start_date_str
-    user_input_end_date = user_input_end_date_str
-    print(f"Start Date: {user_input_start_date}")
-    print(f"Start Date: {user_input_end_date}")
-
-
-    # Filter the dataframe based on the date range
-    date_filtered_df = validated_df[
-        (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') >= user_input_start_date) &
-        (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') <= user_input_end_date)
-    ]
-
-    # Create a copy of date_filtered_df to avoid modifying the original DataFrame
-    working_data_df = date_filtered_df.copy()
-
-    # Convert the 'time' column to the desired format in the copied DataFrame
-    working_data_df['time'] = pd.to_datetime(working_data_df['time']).dt.strftime('%d-%m-%Y %H:%M:%S')
-
-    # Now formatted_df will have the 'time' column formatted as 'dd-mm-yyyy 00:00:00'
-    print("Date For Output:")
-    print(working_data_df)
-
+    # Outer Loop - get dates from user for specified range
     while True:
-        # Output Selection Options
-        print("\nSelect the data you want to display:")
-        print("1: All Data")
-        print("2: Atmospheric Pressure")
-        print("3: Wind Speed and Gust")
-        print("4: Wave Height, Wave Period, and Mean Wave Direction")
-        print("5: Air Temperature and Sea Temperature")
-        print("6: Exit Ouput Options")
+        # Get dates from user to interrogate validated data frame
+        user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
+        print(validated_df['time'])
 
-        # take users selected number
-        selection = input("Enter the number corresponding to your selection: ")
-        # convert selection to integer for use later
-        selection = int(selection)
 
-        # Initialise selection storage
-        selected_columns = []
-        # Create relevant data subset dataframes for processing
-        if selection == 1:
-            selected_columns = ['time', 'AtmosphericPressure', 'WindDirection',
-                            'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',
-                            'MeanWaveDirection', 'AirTemperature', 'SeaTemperature', 'RelativeHumidity']
-        elif selection == 2:
-            selected_columns = ['time', 'AtmosphericPressure']
-        elif selection == 3:
-            selected_columns = ['time', 'WindSpeed', 'Gust']
-        elif selection == 4:
-            selected_columns = ['time', 'WaveHeight', 'WavePeriod', 'MeanWaveDirection']
-        elif selection == 5:
-            selected_columns = ['time', 'AirTemperature', 'SeaTemperature']
-        elif selection == 6: 
-            print("\nExited Data Set options......\n")
-            break
+        # Convert user input dates to the format used in validated_df
+        user_input_start_date = user_input_start_date_str
+        user_input_end_date = user_input_end_date_str
+        print(f"Start Date: {user_input_start_date}")
+        print(f"Start Date: {user_input_end_date}")
 
-        # Create an output df from working data df based on users selected_columns
-        user_output_df = working_data_df[selected_columns]
 
-        # Display the number of rows of data in the working set
-        num_rows = len(user_output_df)
-        print(f"\nThere are {num_rows} rows of data.     <<<<<\n")
+        # Filter the dataframe based on the date range
+        date_filtered_df = validated_df[
+            (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') >= user_input_start_date) &
+            (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') <= user_input_end_date)
+        ]
 
-        # Check to see how many rows there are in the user output dataframe
-        if num_rows <= 20:
-            # If there are 20 or fewer rows, allow all actions
-            allow_screen = True
-            allow_graph = True
-            allow_sheet = True
-        else:
-            # If more than 20 rows, limit options
-            allow_screen = False
-            allow_graph = True
-            allow_sheet = True
-            print(f"\nNote: Displaying the first 20 rows. There are {num_rows - 20} more rows not displayed.")
+        # Create a copy of date_filtered_df to avoid modifying the original DataFrame
+        working_data_df = date_filtered_df.copy()
 
-        # Create loop allowing user select different output options
+        # Convert the 'time' column to the desired format in the copied DataFrame
+        working_data_df['time'] = pd.to_datetime(working_data_df['time']).dt.strftime('%d-%m-%Y %H:%M:%S')
+
+        # Now formatted_df will have the 'time' column formatted as 'dd-mm-yyyy 00:00:00'
+        print("Date For Output:")
+        print(working_data_df)
+
+        # Middle loop - getting specific data set for user output
         while True:
-            # Get the action from user with validation
-            output_selection = get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet)
+            # Output Selection Options
+            print("\nSelect the data you want to display:")
+            print("1: All Data")
+            print("2: Atmospheric Pressure")
+            print("3: Wind Speed and Gust")
+            print("4: Wave Height, Wave Period, and Mean Wave Direction")
+            print("5: Air Temperature and Sea Temperature")
+            print("6: Exit Ouput Options")
 
-            # If user selects 1 - output to screen
-            if output_selection == 1:
-                # Print the first 20 rows if more than 20
-                print("\nSelected Data:")
-                if num_rows > 20:
-                    print(user_output_df.head(20))
-                else:
-                    print(user_output_df)
-            # If user selects 2 - Output goes to graph in browser
-            elif output_selection == 2:
-                # Option 2: Output to graph
-                # Plotting weather data over time
-                x_col = 'time'
-                # Refactored to select columns except the time column for y axis
-                y_cols = [col for col in selected_columns if col != x_col]
-                title = 'Weather Data Over Time'
-                user_requested_graph(user_output_df, x_col, y_cols, title)
-            # If user selects 3 - output to google sheet
-            elif output_selection == 3:
-                # Option 3 Write Data To Google Sheet
-                set_with_dataframe(user_data_output, user_output_df)
-                print("\nData Written To Google Sheet")
-            # If user select 4 - loop ends
-            elif output_selection == 4:
-                # Option 4 Exit the loop
-                print("\nExited Output Options ......\n")
+            # take users selected number
+            selection = input("Enter the number corresponding to your selection: ")
+            # convert selection to integer for use later
+            selection = int(selection)
+
+            # Initialise selection storage
+            selected_columns = []
+            # Create relevant data subset dataframes for processing
+            if selection == 1:
+                selected_columns = ['time', 'AtmosphericPressure', 'WindDirection',
+                                'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',
+                                'MeanWaveDirection', 'AirTemperature', 'SeaTemperature', 'RelativeHumidity']
+            elif selection == 2:
+                selected_columns = ['time', 'AtmosphericPressure']
+            elif selection == 3:
+                selected_columns = ['time', 'WindSpeed', 'Gust']
+            elif selection == 4:
+                selected_columns = ['time', 'WaveHeight', 'WavePeriod', 'MeanWaveDirection']
+            elif selection == 5:
+                selected_columns = ['time', 'AirTemperature', 'SeaTemperature']
+            elif selection == 6: 
+                print("\nExited Data Set options......\n")
                 break
+
+            # Create an output df from working data df based on users selected_columns
+            user_output_df = working_data_df[selected_columns]
+
+            # Display the number of rows of data in the working set
+            num_rows = len(user_output_df)
+            print(f"\nThere are {num_rows} rows of data.     <<<<<\n")
+
+            # Check to see how many rows there are in the user output dataframe
+            if num_rows <= 20:
+                # If there are 20 or fewer rows, allow all actions
+                allow_screen = True
+                allow_graph = True
+                allow_sheet = True
             else:
-                print("Invalid selection. Please enter a number between 1 and 4.")
+                # If more than 20 rows, limit options
+                allow_screen = False
+                allow_graph = True
+                allow_sheet = True
+                print(f"\nNote: Displaying the first 20 rows. There are {num_rows - 20} more rows not displayed.")
+
+            # Inner loop allowing user select different output options
+            while True:
+                # Get the action from user with validation
+                output_selection = get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet)
+
+                # If user selects 1 - output to screen
+                if output_selection == 1:
+                    # Print the first 20 rows if more than 20
+                    print("\nSelected Data:")
+                    if num_rows > 20:
+                        print(user_output_df.head(20))
+                    else:
+                        print(user_output_df)
+                # If user selects 2 - Output goes to graph in browser
+                elif output_selection == 2:
+                    # Option 2: Output to graph
+                    # Plotting weather data over time
+                    x_col = 'time'
+                    # Refactored to select columns except the time column for y axis
+                    y_cols = [col for col in selected_columns if col != x_col]
+                    title = 'Weather Data Over Time'
+                    user_requested_graph(user_output_df, x_col, y_cols, title)
+                # If user selects 3 - output to google sheet
+                elif output_selection == 3:
+                    # Option 3 Write Data To Google Sheet
+                    set_with_dataframe(user_data_output, user_output_df)
+                    print("\nData Written To Google Sheet")
+                # If user select 4 - loop ends
+                elif output_selection == 4:
+                    # Option 4 Exit the loop
+                    print("\nExited Output Options ......\n")
+                    break
+                else:
+                    print("Invalid selection. Please enter a number between 1 and 4.")
 
 # Initialise the sheets and validate the data
 data_initialisation_and_validation()
