@@ -272,6 +272,22 @@ def validate_master_data(master_data, session_log_data, error_log_data):
 
     return validated_data_df
 
+
+def format_df_date():
+    """
+    Function to change the format of the time column date
+    from yyyy-mm-dd to dd-mm-yyyy
+    as this is the format the user will input as their
+    reqesed date range
+    """
+    # convert the time columnin df to just date for comparison drop h:m:s
+    validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%YT%H:%M:%S', errors='coerce', dayfirst=True)   
+    # Extract the date component only, ignoring the time
+    validated_df['date_only'] = validated_df['time'].dt.strftime('%d-%m-%Y')
+    
+    print(validated_df['date_only'])
+
+
 def validate_input_dates(date_str, reference, df_first_date, df_last_date):
     """
     function to take input values for start date and end date
@@ -480,13 +496,8 @@ def main():
         print("Error: Data has not been validated")
         return  # Exit the function early if validation is not done
 
-
-    # convert the time columnin df to just date for comparison drop h:m:s
-    validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%YT%H:%M:%S', errors='coerce', dayfirst=True)   
-    # Extract the date component only, ignoring the time
-    validated_df['date_only'] = validated_df['time'].dt.strftime('%d-%m-%Y')
-    
-    print(validated_df['date_only'])
+    # Convert the data frame date format to dd-mm-yyyy
+    format_df_date()
 
     # Outer Loop - get dates from user for specified range
     while True:
