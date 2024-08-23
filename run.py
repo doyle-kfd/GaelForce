@@ -436,7 +436,43 @@ def format_df_data_for_display(date_filtered_df):
 
     return working_data_df
 
+def get_data_selection():
+    """
+    Get the user's selection of data columns to display.
+    """
+    # Output Selection Options
+    print("\nSelect the data you want to display:")
+    print("1: All Data")
+    print("2: Atmospheric Pressure")
+    print("3: Wind Speed and Gust")
+    print("4: Wave Height, Wave Period, and Mean Wave Direction")
+    print("5: Air Temperature and Sea Temperature")
+    print("6: Exit Ouput Options")
 
+    # take users selected number
+    selection = input("Enter the number corresponding to your selection: ")
+    # convert selection to integer for use later
+    selection = int(selection)
+
+    # Initialise selection storage
+    selected_columns = []
+    # Create relevant data subset dataframes for processing
+    if selection == 1:
+        selected_columns = ['time', 'AtmosphericPressure', 'WindDirection',
+                        'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',
+                        'MeanWaveDirection', 'AirTemperature', 'SeaTemperature', 'RelativeHumidity']
+    elif selection == 2:
+        selected_columns = ['time', 'AtmosphericPressure']
+    elif selection == 3:
+        selected_columns = ['time', 'WindSpeed', 'Gust']
+    elif selection == 4:
+        selected_columns = ['time', 'WaveHeight', 'WavePeriod', 'MeanWaveDirection']
+    elif selection == 5:
+        selected_columns = ['time', 'AirTemperature', 'SeaTemperature']
+    elif selection == 6: 
+        print("\nExited Data Set options......\n")
+
+    return selected_columns
 
 # Initialise the validated dataframe
 validated_df = None
@@ -551,43 +587,15 @@ def main():
 
         # Middle loop - getting specific data set for user output
         while True:
-            # Output Selection Options
-            print("\nSelect the data you want to display:")
-            print("1: All Data")
-            print("2: Atmospheric Pressure")
-            print("3: Wind Speed and Gust")
-            print("4: Wave Height, Wave Period, and Mean Wave Direction")
-            print("5: Air Temperature and Sea Temperature")
-            print("6: Exit Ouput Options")
 
-            # take users selected number
-            selection = input("Enter the number corresponding to your selection: ")
-            # convert selection to integer for use later
-            selection = int(selection)
 
-            # Initialise selection storage
-            selected_columns = []
-            # Create relevant data subset dataframes for processing
-            if selection == 1:
-                selected_columns = ['time', 'AtmosphericPressure', 'WindDirection',
-                                'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',
-                                'MeanWaveDirection', 'AirTemperature', 'SeaTemperature', 'RelativeHumidity']
-            elif selection == 2:
-                selected_columns = ['time', 'AtmosphericPressure']
-            elif selection == 3:
-                selected_columns = ['time', 'WindSpeed', 'Gust']
-            elif selection == 4:
-                selected_columns = ['time', 'WaveHeight', 'WavePeriod', 'MeanWaveDirection']
-            elif selection == 5:
-                selected_columns = ['time', 'AirTemperature', 'SeaTemperature']
-            elif selection == 6: 
-                print("\nExited Data Set options......\n")
-                break
 
-            # Create an output df from working data df based on users selected_columns
+            # Get users selection for data output columns
+            selected_columns = get_data_selection()
+            if not selected_columns:
+                    break
+            
             user_output_df = working_data_df[selected_columns]
-
-            # Display the number of rows of data in the working set
             num_rows = len(user_output_df)
             print(f"\nThere are {num_rows} rows of data.     <<<<<\n")
 
