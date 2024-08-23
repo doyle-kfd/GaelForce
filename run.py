@@ -471,6 +471,8 @@ def get_data_selection():
         selected_columns = ['time', 'AirTemperature', 'SeaTemperature']
     elif selection == 6: 
         print("\nExited Data Set options......\n")
+    else:
+        print("Invalid selection. Please enter a number between 1 and 4.")
 
     return selected_columns
 
@@ -493,6 +495,43 @@ def determine_output_options(num_rows):
         print(f"\nNote: Displaying the first 20 rows. There are {num_rows - 20} more rows not displayed.")
 
     return allow_screen, allow_graph, allow_sheet
+
+
+def process_output_selection(user_output_df, selected_columns, allow_screen, allow_graph, allow_sheet):
+    # Inner loop allowing user select different output options
+    while True:
+        # Get the action from user with validation
+        output_selection = get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet)
+
+        # If user selects 1 - output to screen
+        if output_selection == 1:
+            # Print the first 20 rows if more than 20
+            print("\nSelected Data:")
+            if num_rows > 20:
+                print(user_output_df.head(20))
+            else:
+                print(user_output_df)
+        # If user selects 2 - Output goes to graph in browser
+        elif output_selection == 2:
+            # Option 2: Output to graph
+            # Plotting weather data over time
+            x_col = 'time'
+            # Refactored to select columns except the time column for y axis
+            y_cols = [col for col in selected_columns if col != x_col]
+            title = 'Weather Data Over Time'
+            user_requested_graph(user_output_df, x_col, y_cols, title)
+        # If user selects 3 - output to google sheet
+        elif output_selection == 3:
+            # Option 3 Write Data To Google Sheet
+            set_with_dataframe(user_data_output, user_output_df)
+            print("\nData Written To Google Sheet")
+        # If user select 4 - loop ends
+        elif output_selection == 4:
+            # Option 4 Exit the loop
+            print("\nExited Output Options ......\n")
+            break
+        else:
+            print("Invalid selection. Please enter a number between 1 and 4.")
 
 
 # Initialise the validated dataframe
@@ -620,40 +659,10 @@ def main():
             # Determine output options based on rows
             allow_screen, allow_graph, allow_sheet = determine_output_options(num_rows)
 
-            # Inner loop allowing user select different output options
-            while True:
-                # Get the action from user with validation
-                output_selection = get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet)
+            # Create output based on user selection
+            process_output_selection(user_output_df, selected_columns, allow_screen, allow_graph, allow_sheet)
 
-                # If user selects 1 - output to screen
-                if output_selection == 1:
-                    # Print the first 20 rows if more than 20
-                    print("\nSelected Data:")
-                    if num_rows > 20:
-                        print(user_output_df.head(20))
-                    else:
-                        print(user_output_df)
-                # If user selects 2 - Output goes to graph in browser
-                elif output_selection == 2:
-                    # Option 2: Output to graph
-                    # Plotting weather data over time
-                    x_col = 'time'
-                    # Refactored to select columns except the time column for y axis
-                    y_cols = [col for col in selected_columns if col != x_col]
-                    title = 'Weather Data Over Time'
-                    user_requested_graph(user_output_df, x_col, y_cols, title)
-                # If user selects 3 - output to google sheet
-                elif output_selection == 3:
-                    # Option 3 Write Data To Google Sheet
-                    set_with_dataframe(user_data_output, user_output_df)
-                    print("\nData Written To Google Sheet")
-                # If user select 4 - loop ends
-                elif output_selection == 4:
-                    # Option 4 Exit the loop
-                    print("\nExited Output Options ......\n")
-                    break
-                else:
-                    print("Invalid selection. Please enter a number between 1 and 4.")
+            
 
 # Initialise the sheets and validate the data
 data_initialisation_and_validation()
