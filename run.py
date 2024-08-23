@@ -341,8 +341,9 @@ def get_user_dates(validated_df):
     - asks for input start date
     - asks for input end date
     """
-    # Declare variablse for later use
-    error_log_data = []
+    # Declare variable for later use
+    error_log_data = [] 
+
     # Convert the time column in validated_df to date time
     validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%YT%H:%M:%S')
 
@@ -366,10 +367,8 @@ def get_user_dates(validated_df):
             break  # Exit loop if the date is valid
         except ValueError as e:
             # Append error details to the error log and inform the user
-            error_log_data.append(["User data input validation Error <<<<<"])
-            error_log_data.append([str(pd.Timestamp.now())])
-            error_log_data.append(["Start Date Error: Invalid format"])
-            error_log_data.append([f"{e}"])
+            error_log_data.append(["End Date Error", str(pd.Timestamp.now())])
+            error_log_data.append(["End Date Error", str(e)])
             print("Start Date Error:\n")
             print(f"Invalid start date input.\n A detailed description of the error\n has been appended to the error log.")
             print("\nPlease enter the date in 'dd-mm-yyyy' format.")
@@ -389,10 +388,8 @@ def get_user_dates(validated_df):
             break  # Exit loop if the date is valid
         except ValueError as e:
             # Append error details to the error log and inform the user
-            error_log_data.append(["User data input validation Error <<<<<"])
-            error_log_data.append([str(pd.Timestamp.now())])
-            error_log_data.append(["End Date Error: Invalid format"])
-            error_log_data.append([f"{e}"])
+            error_log_data.append(["End Date Error", str(pd.Timestamp.now())])
+            error_log_data.append(["End Date Error", str(e)])
             print(f"End Date Error:\n")
             print(f"Invalid end date input.\n A detailed description of the error\n has been appended to the error log.")
             print("\nPlease enter the date in 'dd-mm-yyyy' format.")
@@ -401,7 +398,10 @@ def get_user_dates(validated_df):
     user_input_start_date_str = user_input_start_date.strftime('%d-%m-%Y')
     user_input_end_date_str = user_input_end_date.strftime('%d-%m-%Y')
 
-    return user_input_start_date_str, user_input_end_date_str, error_log
+    # Write any errors to log
+    log_errors_to_sheet(error_log_data)
+
+    return user_input_start_date_str, user_input_end_date_str
 
 
 def filter_data_by_date(start_date, end_date):
@@ -434,6 +434,9 @@ def get_data_selection():
     Get the user's selection of data columns to display.
     """
     while True:
+        # Initialise selection storage
+        selected_columns = []
+        error_log_data = []
         # Output Selection Options
         print("\nSelect the data you want to display:")
         print("1: All Data")
@@ -449,8 +452,7 @@ def get_data_selection():
             # convert selection to integer for use later
             selection = int(selection)
 
-            # Initialise selection storage
-            selected_columns = []
+
             # Create relevant data subset dataframes for processing
             if selection == 1:
                 selected_columns = ['time', 'AtmosphericPressure', 'WindDirection',
@@ -467,9 +469,17 @@ def get_data_selection():
             elif selection == 6: 
                 print("\nExited Data Set options......\n")
 
-            return selected_columns
-        except ValueError:
-            print("\n\nInvalid input. Please enter a valid number.\n")
+        except ValueError as e:
+            # Append error details to the error log and inform the user
+            error_log_data.append(["Invalid input. Please enter a valid number <<<<<"])
+            error_log_data.append([str(pd.Timestamp.now())])
+            error_log_data.append(["Data Selection Error: Invalid format"])
+            error_log_data.append([f"{e}"])
+            print(f"Data Selection Error:\n")
+            print(f"Invalid data selection input.\n A detailed description of the error\n has been appended to the error log.")
+            print("\nPlease enter 1, 2, 3, 4, 5, 6 to exit\n")
+
+        return selected_columns, error_log_data        
 
 
 def determine_output_options(num_rows):
@@ -599,6 +609,26 @@ def get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet):
             print("\n\nInvalid input. Please enter a number.\n")
 
 
+def log_errors_to_sheet(error_log_data):
+    """
+    Write errors to the Google Sheet, starting at cell A25 and appending subsequent errors.
+    """
+    # Determine where to start appending errors
+    start_row = 3
+    existing_values = error_log.get_all_values()
+    if existing_values:
+        last_row = len(existing_values) + start_row - 1
+    else:
+        last_row = start_row - 1
+
+    # Append new errors
+    for i, error in enumerate(error_log_data):
+        row = last_row + i + 1
+        error_log.update_cell(row, 1, f"Error {i + 1}: {error[1]}")  # Write errors starting from column A
+
+    # Clear the error_log_data list after logging
+    error_log_data = []
+
 def main():
     """
     Main function that controls all the functionality of the application
@@ -608,6 +638,7 @@ def main():
     - Filtering the dataframe based on date ranges from user
     """
     global validated_df  # status of validated_df
+    error_log_data = []
 
     # Check to see if the data has been validated
     if validated_df is None:
@@ -620,7 +651,7 @@ def main():
     # Outer Loop - get dates from user for specified range
     while True:
         # Get dates from user to interrogate validated data frame
-        user_input_start_date_str, user_input_end_date_str, error_log = get_user_dates(validated_df)
+        user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
 
         # Check if user selected "quit"
         if user_input_start_date_str is None or user_input_end_date_str is None:
@@ -643,7 +674,7 @@ def main():
         # Middle loop - getting specific data set for user output
         while True:
             # Get users selection for data output columns
-            selected_columns = get_data_selection()
+            selected_columns, error_log_data = get_data_selection()
             if not selected_columns:
                     break
             
