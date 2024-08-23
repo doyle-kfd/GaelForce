@@ -420,6 +420,24 @@ def filter_data_by_date(start_date, end_date):
         (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') <= end_date)
     ]
 
+def format_df_data_for_display(date_filtered_df):
+    """
+    Format the DataFrame for display, converting the 'time' column to the desired format.
+    """
+    # Create a copy of date_filtered_df to avoid modifying the original DataFrame
+    working_data_df = date_filtered_df.copy()
+
+    # Convert the 'time' column to the desired format in the copied DataFrame
+    working_data_df['time'] = pd.to_datetime(working_data_df['time']).dt.strftime('%d-%m-%Y %H:%M:%S')
+
+    # Now formatted_df will have the 'time' column formatted as 'dd-mm-yyyy 00:00:00'
+    print("Date For Output:")
+    print(working_data_df)
+
+    return working_data_df
+
+
+
 # Initialise the validated dataframe
 validated_df = None
 
@@ -527,15 +545,9 @@ def main():
         # Filter the dataframe based on the date range
         date_filtered_df = filter_data_by_date(user_input_start_date, user_input_end_date)
 
-        # Create a copy of date_filtered_df to avoid modifying the original DataFrame
-        working_data_df = date_filtered_df.copy()
+        # Format the dataframe for display, converting date format to dd-mm-yyyy
+        working_data_df = format_df_data_for_display(date_filtered_df)
 
-        # Convert the 'time' column to the desired format in the copied DataFrame
-        working_data_df['time'] = pd.to_datetime(working_data_df['time']).dt.strftime('%d-%m-%Y %H:%M:%S')
-
-        # Now formatted_df will have the 'time' column formatted as 'dd-mm-yyyy 00:00:00'
-        print("Date For Output:")
-        print(working_data_df)
 
         # Middle loop - getting specific data set for user output
         while True:
