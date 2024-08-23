@@ -433,11 +433,10 @@ def get_data_selection():
     """
     Get the user's selection of data columns to display.
     """
+    # Initialise selection storage
+    selected_columns = []
     error_log_data = []
     while True:
-        # Initialise selection storage
-        selected_columns = []
-
         # Output Selection Options
         print("\nSelect the data you want to display:")
         print("1: All Data")
@@ -468,8 +467,12 @@ def get_data_selection():
             elif selection == 5:
                 selected_columns = ['time', 'AirTemperature', 'SeaTemperature']
             elif selection == 6: 
-                print("\nExited Data Set options......\n")
-                break
+                return []  # Exit the function, returning an empty list.
+            else:
+                raise ValueError("Selection out of range. Please select a number between 1 and 6.")
+
+            # If a valid selection is made, break out of the loop and return the selected columns
+            break
 
         except ValueError as e:
             # Append error details to the error log and inform the user
@@ -479,10 +482,10 @@ def get_data_selection():
             print(f"Invalid data selection input.\n A detailed description of the error\n has been appended to the error log.")
             print("\nPlease enter 1, 2, 3, 4, 5, 6 to exit\n")
 
-    # Write any errors to log
-    log_errors_to_sheet(error_log_data)
+        # Write any errors to log
+        log_errors_to_sheet(error_log_data)
 
-    return selected_columns, error_log_data        
+    return selected_columns   
 
 
 def determine_output_options(num_rows):
@@ -505,40 +508,41 @@ def determine_output_options(num_rows):
     return allow_screen, allow_graph, allow_sheet
 
 
-def process_output_selection(user_output_df, selected_columns, allow_screen, allow_graph, allow_sheet):
+def get_output_selection(user_output_df, selected_columns, allow_screen, allow_graph, allow_sheet):
     # Inner loop allowing user select different output options
     while True:
         # Get the action from user with validation
         output_selection = get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet)
+        try:
+            # If user selects 1 - output to screen
+            if output_selection == 1:
+                # Print the first 20 rows if more than 20
+                print("\nSelected Data:")
+                if num_rows > 20:
+                    print(user_output_df.head(20))
+                else:
+                    print(user_output_df)
+            # If user selects 2 - Output goes to graph in browser
+            elif output_selection == 2:
+                # Option 2: Output to graph
+                # Plotting weather data over time
+                x_col = 'time'
+                # Refactored to select columns except the time column for y axis
+                y_cols = [col for col in selected_columns if col != x_col]
+                title = 'Weather Data Over Time'
+                user_requested_graph(user_output_df, x_col, y_cols, title)
+            # If user selects 3 - output to google sheet
+            elif output_selection == 3:
+                # Option 3 Write Data To Google Sheet
+                set_with_dataframe(user_data_output, user_output_df)
+                print("\nData Written To Google Sheet")
+            # If user select 4 - loop ends
+            elif output_selection == 4:
+                # Option 4 Exit the loop
+                print("\nExited Output Options ......\n")
+                break
 
-        # If user selects 1 - output to screen
-        if output_selection == 1:
-            # Print the first 20 rows if more than 20
-            print("\nSelected Data:")
-            if num_rows > 20:
-                print(user_output_df.head(20))
-            else:
-                print(user_output_df)
-        # If user selects 2 - Output goes to graph in browser
-        elif output_selection == 2:
-            # Option 2: Output to graph
-            # Plotting weather data over time
-            x_col = 'time'
-            # Refactored to select columns except the time column for y axis
-            y_cols = [col for col in selected_columns if col != x_col]
-            title = 'Weather Data Over Time'
-            user_requested_graph(user_output_df, x_col, y_cols, title)
-        # If user selects 3 - output to google sheet
-        elif output_selection == 3:
-            # Option 3 Write Data To Google Sheet
-            set_with_dataframe(user_data_output, user_output_df)
-            print("\nData Written To Google Sheet")
-        # If user select 4 - loop ends
-        elif output_selection == 4:
-            # Option 4 Exit the loop
-            print("\nExited Output Options ......\n")
-            break
-        else:
+        except ValueError as e:
             print("Invalid selection. Please enter a number between 1 and 4.")
 
 
@@ -677,7 +681,7 @@ def main():
         # Middle loop - getting specific data set for user output
         while True:
             # Get users selection for data output columns
-            selected_columns, error_log_data = get_data_selection()
+            selected_columns = get_data_selection()
             if not selected_columns:
                     break
             
@@ -689,7 +693,7 @@ def main():
             allow_screen, allow_graph, allow_sheet = determine_output_options(num_rows)
 
             # Create output based on user selection
-            process_output_selection(user_output_df, selected_columns, allow_screen, allow_graph, allow_sheet)
+            get_output_selection(user_output_df, selected_columns, allow_screen, allow_graph, allow_sheet)
 
     
     # Write error log to error log sheet if there are errors to be written
