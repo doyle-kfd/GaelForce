@@ -411,6 +411,15 @@ def get_user_dates(validated_df):
     return user_input_start_date_str, user_input_end_date_str
 
 
+def filter_data_by_date(start_date, end_date):
+    """
+    Filter the DataFrame by the specified date range.
+    """
+    return validated_df[
+        (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') >= start_date) &
+        (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') <= end_date)
+    ]
+
 # Initialise the validated dataframe
 validated_df = None
 
@@ -509,19 +518,14 @@ def main():
             print("\n\nDate input was canceled. Exiting program.\n\n")
             exit()  # Exit app
 
-
         # Convert user input dates to the format used in validated_df
         user_input_start_date = user_input_start_date_str
         user_input_end_date = user_input_end_date_str
-        print(f"Start Date: {user_input_start_date}")
-        print(f"Start Date: {user_input_end_date}")
-
+        print(f"Date Range - Beginning: {user_input_start_date}")
+        print(f"Date Range - End: {user_input_end_date}")
 
         # Filter the dataframe based on the date range
-        date_filtered_df = validated_df[
-            (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') >= user_input_start_date) &
-            (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') <= user_input_end_date)
-        ]
+        date_filtered_df = filter_data_by_date(user_input_start_date, user_input_end_date)
 
         # Create a copy of date_filtered_df to avoid modifying the original DataFrame
         working_data_df = date_filtered_df.copy()
