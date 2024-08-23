@@ -359,7 +359,7 @@ def get_user_dates(validated_df):
         # Check to see if the user wants to quit
         if user_input_start_date.lower() == 'quit':
             print("Exiting program as requested.")
-            return None, None
+            exit()
 
         try:
             user_input_start_date = validate_input_dates(user_input_start_date, "start", df_first_date, df_last_date)
@@ -380,7 +380,7 @@ def get_user_dates(validated_df):
         # Check to see if the user wants to quit        
         if user_input_end_date.lower() == 'quit':
             print("Exiting program as requested.")
-            return None, None
+            exit()
 
         try:
             user_input_end_date = validate_input_dates(user_input_end_date, "end", df_first_date, df_last_date)
@@ -401,14 +401,7 @@ def get_user_dates(validated_df):
     user_input_start_date_str = user_input_start_date.strftime('%d-%m-%Y')
     user_input_end_date_str = user_input_end_date.strftime('%d-%m-%Y')
 
-
-
-    # Write error log to error log sheet if there are errors to be written
-    if error_log_data:
-        error_log_data = [[str(item) for item in sublist] for sublist in error_log_data]
-        error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)), 'A25')
-
-    return user_input_start_date_str, user_input_end_date_str
+    return user_input_start_date_str, user_input_end_date_str, error_log
 
 
 def filter_data_by_date(start_date, end_date):
@@ -440,41 +433,43 @@ def get_data_selection():
     """
     Get the user's selection of data columns to display.
     """
-    # Output Selection Options
-    print("\nSelect the data you want to display:")
-    print("1: All Data")
-    print("2: Atmospheric Pressure")
-    print("3: Wind Speed and Gust")
-    print("4: Wave Height, Wave Period, and Mean Wave Direction")
-    print("5: Air Temperature and Sea Temperature")
-    print("6: Exit Ouput Options")
+    while True:
+        # Output Selection Options
+        print("\nSelect the data you want to display:")
+        print("1: All Data")
+        print("2: Atmospheric Pressure")
+        print("3: Wind Speed and Gust")
+        print("4: Wave Height, Wave Period, and Mean Wave Direction")
+        print("5: Air Temperature and Sea Temperature")
+        print("6: Exit Ouput Options")
 
-    # take users selected number
-    selection = input("Enter the number corresponding to your selection: ")
-    # convert selection to integer for use later
-    selection = int(selection)
+        # take users selected number
+        selection = input("Enter the number corresponding to your selection: ")
+        try:
+            # convert selection to integer for use later
+            selection = int(selection)
 
-    # Initialise selection storage
-    selected_columns = []
-    # Create relevant data subset dataframes for processing
-    if selection == 1:
-        selected_columns = ['time', 'AtmosphericPressure', 'WindDirection',
-                        'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',
-                        'MeanWaveDirection', 'AirTemperature', 'SeaTemperature', 'RelativeHumidity']
-    elif selection == 2:
-        selected_columns = ['time', 'AtmosphericPressure']
-    elif selection == 3:
-        selected_columns = ['time', 'WindSpeed', 'Gust']
-    elif selection == 4:
-        selected_columns = ['time', 'WaveHeight', 'WavePeriod', 'MeanWaveDirection']
-    elif selection == 5:
-        selected_columns = ['time', 'AirTemperature', 'SeaTemperature']
-    elif selection == 6: 
-        print("\nExited Data Set options......\n")
-    else:
-        print("Invalid selection. Please enter a number between 1 and 4.")
+            # Initialise selection storage
+            selected_columns = []
+            # Create relevant data subset dataframes for processing
+            if selection == 1:
+                selected_columns = ['time', 'AtmosphericPressure', 'WindDirection',
+                                'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',
+                                'MeanWaveDirection', 'AirTemperature', 'SeaTemperature', 'RelativeHumidity']
+            elif selection == 2:
+                selected_columns = ['time', 'AtmosphericPressure']
+            elif selection == 3:
+                selected_columns = ['time', 'WindSpeed', 'Gust']
+            elif selection == 4:
+                selected_columns = ['time', 'WaveHeight', 'WavePeriod', 'MeanWaveDirection']
+            elif selection == 5:
+                selected_columns = ['time', 'AirTemperature', 'SeaTemperature']
+            elif selection == 6: 
+                print("\nExited Data Set options......\n")
 
-    return selected_columns
+            return selected_columns
+        except ValueError:
+            print("\n\nInvalid input. Please enter a valid number.\n")
 
 
 def determine_output_options(num_rows):
@@ -584,7 +579,7 @@ def get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet):
             print("3: Write to Google Sheet")
         print("4: Exit")
         
-        user_input = input("\nEnter the number corresponding to your desired output: ")
+        user_input = input("\nEnter the number corresponding to your desired output:")
         
         try:
             # Attempt to convert input to an integer
@@ -625,7 +620,7 @@ def main():
     # Outer Loop - get dates from user for specified range
     while True:
         # Get dates from user to interrogate validated data frame
-        user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
+        user_input_start_date_str, user_input_end_date_str, error_log = get_user_dates(validated_df)
 
         # Check if user selected "quit"
         if user_input_start_date_str is None or user_input_end_date_str is None:
@@ -662,8 +657,13 @@ def main():
             # Create output based on user selection
             process_output_selection(user_output_df, selected_columns, allow_screen, allow_graph, allow_sheet)
 
-            
+    
+    # Write error log to error log sheet if there are errors to be written
+    if error_log_data:
+        error_log_data = [[str(item) for item in sublist] for sublist in error_log_data]
+        error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)), 'A25')
 
+            
 # Initialise the sheets and validate the data
 data_initialisation_and_validation()
 
