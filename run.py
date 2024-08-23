@@ -433,10 +433,11 @@ def get_data_selection():
     """
     Get the user's selection of data columns to display.
     """
+    error_log_data = []
     while True:
         # Initialise selection storage
         selected_columns = []
-        error_log_data = []
+
         # Output Selection Options
         print("\nSelect the data you want to display:")
         print("1: All Data")
@@ -468,18 +469,20 @@ def get_data_selection():
                 selected_columns = ['time', 'AirTemperature', 'SeaTemperature']
             elif selection == 6: 
                 print("\nExited Data Set options......\n")
+                break
 
         except ValueError as e:
             # Append error details to the error log and inform the user
-            error_log_data.append(["Invalid input. Please enter a valid number <<<<<"])
-            error_log_data.append([str(pd.Timestamp.now())])
-            error_log_data.append(["Data Selection Error: Invalid format"])
-            error_log_data.append([f"{e}"])
+            error_log_data.append(["End Date Error", str(pd.Timestamp.now())])
+            error_log_data.append(["End Date Error", str(e)])
             print(f"Data Selection Error:\n")
             print(f"Invalid data selection input.\n A detailed description of the error\n has been appended to the error log.")
             print("\nPlease enter 1, 2, 3, 4, 5, 6 to exit\n")
 
-        return selected_columns, error_log_data        
+    # Write any errors to log
+    log_errors_to_sheet(error_log_data)
+
+    return selected_columns, error_log_data        
 
 
 def determine_output_options(num_rows):
@@ -614,7 +617,7 @@ def log_errors_to_sheet(error_log_data):
     Write errors to the Google Sheet, starting at cell A25 and appending subsequent errors.
     """
     # Determine where to start appending errors
-    start_row = 3
+    start_row = 4
     existing_values = error_log.get_all_values()
     if existing_values:
         last_row = len(existing_values) + start_row - 1
