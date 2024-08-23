@@ -474,6 +474,27 @@ def get_data_selection():
 
     return selected_columns
 
+
+def determine_output_options(num_rows):
+    """
+    Determine what output options are allowed based on the number of rows.
+    """
+    # Check to see how many rows there are in the user output dataframe
+    if num_rows <= 20:
+        # If there are 20 or fewer rows, allow all actions
+        allow_screen = True
+        allow_graph = True
+        allow_sheet = True
+    else:
+        # If more than 20 rows, limit options
+        allow_screen = False
+        allow_graph = True
+        allow_sheet = True
+        print(f"\nNote: Displaying the first 20 rows. There are {num_rows - 20} more rows not displayed.")
+
+    return allow_screen, allow_graph, allow_sheet
+
+
 # Initialise the validated dataframe
 validated_df = None
 
@@ -587,9 +608,6 @@ def main():
 
         # Middle loop - getting specific data set for user output
         while True:
-
-
-
             # Get users selection for data output columns
             selected_columns = get_data_selection()
             if not selected_columns:
@@ -599,18 +617,8 @@ def main():
             num_rows = len(user_output_df)
             print(f"\nThere are {num_rows} rows of data.     <<<<<\n")
 
-            # Check to see how many rows there are in the user output dataframe
-            if num_rows <= 20:
-                # If there are 20 or fewer rows, allow all actions
-                allow_screen = True
-                allow_graph = True
-                allow_sheet = True
-            else:
-                # If more than 20 rows, limit options
-                allow_screen = False
-                allow_graph = True
-                allow_sheet = True
-                print(f"\nNote: Displaying the first 20 rows. There are {num_rows - 20} more rows not displayed.")
+            # Determine output options based on rows
+            allow_screen, allow_graph, allow_sheet = determine_output_options(num_rows)
 
             # Inner loop allowing user select different output options
             while True:
