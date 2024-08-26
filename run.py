@@ -4,7 +4,7 @@ import numpy as np
 from google.oauth2.service_account import Credentials
 from gspread_dataframe import set_with_dataframe
 from scipy.stats import zscore
-import matplotlib.pyplot as plt
+from googleapiclient.discovery import build
 
 
 SCOPE = [
@@ -27,6 +27,7 @@ user_data_output = SHEET.worksheet('user_data_output')                          
 session_log = SHEET.worksheet('session_log')                                     # Errors sent to log
 error_log = SHEET.worksheet('gael_force_error_log')                              # Errors sent to log
 date_time_log = SHEET.worksheet('date_time')                                     # Date Time format error log
+graphical_output_sheet = SHEET.worksheet('graphical_output')
 
 # define the sheets to be user for outlier output
 atmos_outlier_log = SHEET.worksheet('atmos_outliers')
@@ -53,7 +54,8 @@ def clear_all_sheets():
     print("Starting Google Sheet Initialisation\n")
     sheets = [
         validated_master_data, user_data_output, session_log, error_log,
-        atmos_outlier_log, wind_outlier_log, wave_outlier_log, temp_outlier_log, date_time_log
+        atmos_outlier_log, wind_outlier_log, wave_outlier_log, temp_outlier_log, 
+        date_time_log, graphical_output_sheet
     ]
     for sheet in sheets:
         sheet.clear()
@@ -528,6 +530,7 @@ def get_output_selection(user_output_df, selected_columns, allow_screen, allow_g
                 # Refactored to select columns except the time column for y axis
                 y_cols = [col for col in selected_columns if col != x_col]
                 title = 'Weather Data Over Time'
+                print(user_output_df)
                 user_requested_graph(user_output_df, x_col, y_cols, title)
             # If user selects 3 - output to google sheet
             elif output_selection == 3:
@@ -567,11 +570,91 @@ def data_initialisation_and_validation():
 
 def user_requested_graph(df, x_col, y_cols, title):
     """
-    Function to plot data, based on users requirements
+    Function to write data to a Google Sheet and create a chart.
     """
-    fig = px.line(df, x=x_col, y=y_cols, title=title)
-    fig.update_layout(xaxis_title=x_col, yaxis_title=', '.join(y_cols))
-    fig.show()
+    try:
+        # Define the Google Sheet ID and the range where data will be written
+        spreadsheet_id = '1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U'
+        sheet_name = 'graphical_output'
+        service = build('sheets', 'v4', credentials=SCOPED_CREDS)
+
+        # Prepare the data to be written to the sheet
+        values = [df.columns.tolist()]  # Header row
+        for index, row in df.iterrows():
+            values.append([row[x_col]] + [row[col] for col in y_cols])
+
+        # Write data to the sheet
+        body = {
+            'values': values
+        }
+        range_ = f'{sheet_name}!A1'
+        service.spreadsheets().values().update(
+            spreadsheetId=spreadsheet_id,
+            range=range_,
+            valueInputOption='RAW',
+            body=body
+        ).execute()
+
+        # Add a chart to the sheet
+        requests = [
+            {
+                'addChart': {
+                    'chart': {
+                        'spec': {
+                            'title': title,
+                            'basicChart': {
+                                'chartType': 'LINE',
+                                'legendPosition': 'BOTTOM_LEGEND',
+                                'axis': [
+                                    {'position': 'BOTTOM_AXIS', 'title': x_col},
+                                    {'position': 'LEFT_AXIS', 'title': 'Values'}
+                                ],
+                                'domains': [{
+                                    'domain': {'sourceRange': {
+                                        'sources': [{
+                                            'sheetId': 0,
+                                            'startRowIndex': 0,
+                                            'endRowIndex': len(values),
+                                            'startColumnIndex': 0,
+                                            'endColumnIndex': 1
+                                        }]
+                                    }}
+                                }],
+                                'series': [{
+                                    'series': {'sourceRange': {
+                                        'sources': [{
+                                            'sheetId': 0,
+                                            'startRowIndex': 0,
+                                            'endRowIndex': len(values),
+                                            'startColumnIndex': i,
+                                            'endColumnIndex': i + 1
+                                        }]
+                                    }}
+                                } for i in range(1, len(y_cols) + 1)]
+                            }
+                        },
+                        'position': {
+                            'newSheet': True
+                        }
+                    }
+                }
+            }
+        ]
+
+        # Execute the request
+        batch_update_request = {
+            'requests': requests
+        }
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=spreadsheet_id,
+            body=batch_update_request
+        ).execute()
+
+        print("Chart has been created in the Google Sheet.")
+
+    except Exception as e:
+        print(f"Error creating chart: {e}.")
+
 
 
 def get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet):
