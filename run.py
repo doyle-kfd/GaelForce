@@ -4,7 +4,7 @@ import numpy as np
 from google.oauth2.service_account import Credentials
 from gspread_dataframe import set_with_dataframe
 from scipy.stats import zscore
-import plotly.express as px
+import matplotlib.pyplot as plt
 
 
 SCOPE = [
@@ -33,9 +33,6 @@ atmos_outlier_log = SHEET.worksheet('atmos_outliers')
 wind_outlier_log = SHEET.worksheet('wind_outliers')
 wave_outlier_log = SHEET.worksheet('wave_outliers')
 temp_outlier_log = SHEET.worksheet('temp_outliers')
-
-
-
 
 
 def df_to_list_of_lists(df):
@@ -281,10 +278,9 @@ def format_df_date():
     reqesed date range
     """
     # convert the time columnin df to just date for comparison drop h:m:s
-    validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%YT%H:%M:%S', errors='coerce', dayfirst=True)   
+    validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%YT%H:%M:%S', errors='coerce', dayfirst=True)
     # Extract the date component only, ignoring the time
     validated_df['date_only'] = validated_df['time'].dt.strftime('%d-%m-%Y')
-    
     print(validated_df['date_only'])
 
 
@@ -334,6 +330,7 @@ def validate_input_dates(date_str, reference, df_first_date, df_last_date):
         # Re-raise the error with a custom message
         raise ValueError(f"Invalid date: {ve}. Please enter the date in 'dd-mm-yyyy' format.")
 
+
 def get_user_dates(validated_df):
     """
     This function:
@@ -342,7 +339,7 @@ def get_user_dates(validated_df):
     - asks for input end date
     """
     # Declare variable for later use
-    error_log_data = [] 
+    error_log_data = []
 
     # Convert the time column in validated_df to date time
     validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%YT%H:%M:%S')
@@ -376,7 +373,7 @@ def get_user_dates(validated_df):
     # Prompt user for end date
     while True:
         user_input_end_date = input(f"Please enter the end date\n (in the format 'dd-mm-yyyy'\n within {df_first_date} and {df_last_date}): ")
-        # Check to see if the user wants to quit        
+        # Check to see if the user wants to quit
         if user_input_end_date.lower() == 'quit':
             print("Exiting program as requested.")
             exit()
@@ -413,6 +410,7 @@ def filter_data_by_date(start_date, end_date):
         (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') <= end_date)
     ]
 
+
 def format_df_data_for_display(date_filtered_df):
     """
     Format the DataFrame for display, converting the 'time' column to the desired format.
@@ -428,6 +426,7 @@ def format_df_data_for_display(date_filtered_df):
     print(working_data_df)
 
     return working_data_df
+
 
 def get_data_selection():
     """
@@ -452,12 +451,11 @@ def get_data_selection():
             # convert selection to integer for use later
             selection = int(selection)
 
-
             # Create relevant data subset dataframes for processing
             if selection == 1:
                 selected_columns = ['time', 'AtmosphericPressure', 'WindDirection',
-                                'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',
-                                'MeanWaveDirection', 'AirTemperature', 'SeaTemperature', 'RelativeHumidity']
+                                    'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',
+                                    'MeanWaveDirection', 'AirTemperature', 'SeaTemperature', 'RelativeHumidity']
             elif selection == 2:
                 selected_columns = ['time', 'AtmosphericPressure']
             elif selection == 3:
@@ -466,7 +464,7 @@ def get_data_selection():
                 selected_columns = ['time', 'WaveHeight', 'WavePeriod', 'MeanWaveDirection']
             elif selection == 5:
                 selected_columns = ['time', 'AirTemperature', 'SeaTemperature']
-            elif selection == 6: 
+            elif selection == 6:
                 return []  # Exit the function, returning an empty list.
             else:
                 raise ValueError("Selection out of range. Please select a number between 1 and 6.")
@@ -485,7 +483,7 @@ def get_data_selection():
         # Write any errors to log
         log_errors_to_sheet(error_log_data)
 
-    return selected_columns   
+    return selected_columns
 
 
 def determine_output_options(num_rows):
@@ -566,6 +564,7 @@ def data_initialisation_and_validation():
     print("Validated DF\n\n\n")
     print(validated_df)
 
+
 def user_requested_graph(df, x_col, y_cols, title):
     """
     Function to plot data, based on users requirements
@@ -595,13 +594,10 @@ def get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet):
         if allow_sheet:
             print("3: Write to Google Sheet")
         print("4: Exit")
-        
         user_input = input("\nEnter the number corresponding to your desired output:")
-        
         try:
             # Attempt to convert input to an integer
             output_selection = int(user_input)
-            
             # Check if the number is within the valid range
             if output_selection in [1, 2, 3, 4] and \
                 ((output_selection == 1 and allow_screen) or
@@ -635,6 +631,7 @@ def log_errors_to_sheet(error_log_data):
 
     # Clear the error_log_data list after logging
     error_log_data = []
+
 
 def main():
     """
@@ -676,15 +673,12 @@ def main():
 
         # Format the dataframe for display, converting date format to dd-mm-yyyy
         working_data_df = format_df_data_for_display(date_filtered_df)
-
-
         # Middle loop - getting specific data set for user output
         while True:
             # Get users selection for data output columns
             selected_columns = get_data_selection()
             if not selected_columns:
-                    break
-            
+                break
             user_output_df = working_data_df[selected_columns]
             num_rows = len(user_output_df)
             print(f"\nThere are {num_rows} rows of data.     <<<<<\n")
@@ -695,13 +689,12 @@ def main():
             # Create output based on user selection
             get_output_selection(user_output_df, selected_columns, allow_screen, allow_graph, allow_sheet)
 
-    
     # Write error log to error log sheet if there are errors to be written
     if error_log_data:
         error_log_data = [[str(item) for item in sublist] for sublist in error_log_data]
         error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)), 'A25')
 
-            
+
 # Initialise the sheets and validate the data
 data_initialisation_and_validation()
 
