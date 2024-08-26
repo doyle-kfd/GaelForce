@@ -27,7 +27,7 @@ user_data_output = SHEET.worksheet('user_data_output')                          
 session_log = SHEET.worksheet('session_log')                                     # Errors sent to log
 error_log = SHEET.worksheet('gael_force_error_log')                              # Errors sent to log
 date_time_log = SHEET.worksheet('date_time')                                     # Date Time format error log
-graphical_output_sheet = SHEET.worksheet('graphical_output')
+graphical_output_sheet = SHEET.worksheet('graphical_output_data')
 
 # define the sheets to be user for outlier output
 atmos_outlier_log = SHEET.worksheet('atmos_outliers')
@@ -54,8 +54,7 @@ def clear_all_sheets():
     print("Starting Google Sheet Initialisation\n")
     sheets = [
         validated_master_data, user_data_output, session_log, error_log,
-        atmos_outlier_log, wind_outlier_log, wave_outlier_log, temp_outlier_log, 
-        date_time_log, graphical_output_sheet
+        atmos_outlier_log, wind_outlier_log, wave_outlier_log, temp_outlier_log, date_time_log
     ]
     for sheet in sheets:
         sheet.clear()
@@ -530,7 +529,6 @@ def get_output_selection(user_output_df, selected_columns, allow_screen, allow_g
                 # Refactored to select columns except the time column for y axis
                 y_cols = [col for col in selected_columns if col != x_col]
                 title = 'Weather Data Over Time'
-                print(user_output_df)
                 user_requested_graph(user_output_df, x_col, y_cols, title)
             # If user selects 3 - output to google sheet
             elif output_selection == 3:
@@ -568,25 +566,25 @@ def data_initialisation_and_validation():
     print(validated_df)
 
 
-def user_requested_graph(df, x_col, y_cols, title):
+def convert_dataframe(df, x_col, y_cols):
     """
-    Function to write data to a Google Sheet and create a chart.
+    Convert columns in DataFrame to appropriate data types.
+    """
+    # Convert the x_col to datetime if it represents dates
+    df.loc[:, x_col] = pd.to_datetime(df[x_col], errors='coerce')
+    
+    # Convert y_cols to numeric
+    for col in y_cols:
+        df.loc[:, col] = pd.to_numeric(df[col], errors='coerce')
+    
+    return df
+
+def write_data_to_sheet(service, spreadsheet_id, sheet_name, values):
+    """
+    Write data to the specified Google Sheet.
     """
     try:
-        # Define the Google Sheet ID and the range where data will be written
-        spreadsheet_id = '1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U'
-        sheet_name = 'graphical_output'
-        service = build('sheets', 'v4', credentials=SCOPED_CREDS)
-
-        # Prepare the data to be written to the sheet
-        values = [df.columns.tolist()]  # Header row
-        for index, row in df.iterrows():
-            values.append([row[x_col]] + [row[col] for col in y_cols])
-
-        # Write data to the sheet
-        body = {
-            'values': values
-        }
+        body = {'values': values}
         range_ = f'{sheet_name}!A1'
         service.spreadsheets().values().update(
             spreadsheetId=spreadsheet_id,
@@ -594,8 +592,23 @@ def user_requested_graph(df, x_col, y_cols, title):
             valueInputOption='RAW',
             body=body
         ).execute()
+    except HttpError as e:
+        print(f"HTTP error occurred while writing data: {e}")
+    except GoogleAuthError as e:
+        print(f"Authentication error occurred: {e}")
+    except Exception as e:
+        print(f"An error occurred while writing data: {e}")
 
-        # Add a chart to the sheet
+
+def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
+    """
+    Add a chart to the Google Sheet with the legend positioned on the right.
+    """
+    try:
+        # Determine the data range for the chart
+        end_row_index = len(y_cols) + 1  # Assuming that the number of rows matches the length of y_cols
+        
+        # Create the requests to add the chart
         requests = [
             {
                 'addChart': {
@@ -604,57 +617,109 @@ def user_requested_graph(df, x_col, y_cols, title):
                             'title': title,
                             'basicChart': {
                                 'chartType': 'LINE',
-                                'legendPosition': 'BOTTOM_LEGEND',
+                                'legendPosition': 'RIGHT_LEGEND',  # Position the legend on the right
                                 'axis': [
                                     {'position': 'BOTTOM_AXIS', 'title': x_col},
                                     {'position': 'LEFT_AXIS', 'title': 'Values'}
                                 ],
-                                'domains': [{
-                                    'domain': {'sourceRange': {
-                                        'sources': [{
-                                            'sheetId': 0,
-                                            'startRowIndex': 0,
-                                            'endRowIndex': len(values),
-                                            'startColumnIndex': 0,
-                                            'endColumnIndex': 1
-                                        }]
-                                    }}
-                                }],
-                                'series': [{
-                                    'series': {'sourceRange': {
-                                        'sources': [{
-                                            'sheetId': 0,
-                                            'startRowIndex': 0,
-                                            'endRowIndex': len(values),
-                                            'startColumnIndex': i,
-                                            'endColumnIndex': i + 1
-                                        }]
-                                    }}
-                                } for i in range(1, len(y_cols) + 1)]
+                                'domains': [
+                                    {
+                                        'domain': {
+                                            'sourceRange': {
+                                                'sources': [
+                                                    {
+                                                        'sheetId': sheet_id,
+                                                        'startRowIndex': 1,  # Assuming the first row is headers
+                                                        'endRowIndex': end_row_index,
+                                                        'startColumnIndex': 0,
+                                                        'endColumnIndex': 1
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                'series': [
+                                    {
+                                        'series': {
+                                            'sourceRange': {
+                                                'sources': [
+                                                    {
+                                                        'sheetId': sheet_id,
+                                                        'startRowIndex': 1,
+                                                        'endRowIndex': end_row_index,
+                                                        'startColumnIndex': i,
+                                                        'endColumnIndex': i + 1
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    } for i in range(1, len(y_cols) + 1)
+                                ]
                             }
                         },
                         'position': {
-                            'newSheet': True
+                            'overlayPosition': {
+                                'anchorCell': {
+                                    'sheetId': sheet_id,
+                                    'rowIndex': 0,
+                                    'columnIndex': len(y_cols) + 2  # Adjusted columnIndex to avoid overlap
+                                },
+                                'offsetXPixels': 0,
+                                'offsetYPixels': 0
+                            }
                         }
                     }
                 }
             }
         ]
-
-        # Execute the request
-        batch_update_request = {
-            'requests': requests
-        }
+        
+        # Execute the batch update request
+        batch_update_request = {'requests': requests}
         service.spreadsheets().batchUpdate(
             spreadsheetId=spreadsheet_id,
             body=batch_update_request
         ).execute()
-
-        print("Chart has been created in the Google Sheet.")
-
+        print("Chart has been created in the Google Sheet")
+    except HttpError as e:
+        print(f"HTTP error occurred while creating the chart: {e}")
+    except GoogleAuthError as e:
+        print(f"Authentication error occurred: {e}")
     except Exception as e:
-        print(f"Error creating chart: {e}.")
+        print(f"An error occurred while creating the chart: {e}")
 
+
+def user_requested_graph(df, x_col, y_cols, title):
+    """
+    Write data to a Google Sheet and create a chart.
+    """
+    try:
+        # Define the Google Sheet ID and the range where data will be written
+        spreadsheet_id = '1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U'
+        sheet_name = 'graphical_output_data'
+        sheet_id = 2079660690  # The specific sheet ID of the output sheet
+        service = build('sheets', 'v4', credentials=SCOPED_CREDS)
+
+        # Convert the DataFrame to correct data types
+        df = convert_dataframe(df, x_col, y_cols)
+
+        # Prepare data to be written to the sheet
+        values = [df.columns.tolist()]  # Header row
+        for index, row in df.iterrows():
+            values.append([row[x_col].strftime('%Y-%m-%d')] + [row[col] for col in y_cols])
+
+        # Write data to the sheet
+        write_data_to_sheet(service, spreadsheet_id, sheet_name, values)
+
+        # Add a chart to the sheet
+        add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title)
+
+    except HttpError as e:
+        print(f"HTTP error occurred: {e}")
+    except GoogleAuthError as e:
+        print(f"Authentication error occurred: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 def get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet):
