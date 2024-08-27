@@ -5,6 +5,7 @@ from google.oauth2.service_account import Credentials
 from gspread_dataframe import set_with_dataframe
 from scipy.stats import zscore
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 
 SCOPE = [
@@ -54,7 +55,7 @@ def clear_all_sheets():
     print("Starting Google Sheet Initialisation\n")
     sheets = [
         validated_master_data, user_data_output, session_log, error_log,
-        atmos_outlier_log, wind_outlier_log, wave_outlier_log, temp_outlier_log, date_time_log
+        atmos_outlier_log, wind_outlier_log, wave_outlier_log, temp_outlier_log, date_time_log, graphical_output_sheet
     ]
     for sheet in sheets:
         sheet.clear()
@@ -566,6 +567,48 @@ def data_initialisation_and_validation():
     print(validated_df)
 
 
+def delete_all_charts_from_sheet(service, spreadsheet_id, sheet_id):
+    """
+    Delete all charts from the specified Google Sheet.
+    """
+    try:
+        # Get the sheet's charts
+        response = service.spreadsheets().get(spreadsheetId=spreadsheet_id, fields='sheets(charts)').execute()
+        sheet_charts = response.get('sheets', [])[0].get('charts', [])
+
+        # Prepare requests to delete each chart
+        requests = []
+        for chart in sheet_charts:
+            if chart.get('position', {}).get('sheetId') == sheet_id:
+                requests.append({
+                    'deleteEmbeddedObject': {
+                        'objectId': chart['chartId']
+                    }
+                })
+
+        if requests:
+            # Execute the batch update request to delete all charts
+            batch_update_request = {'requests': requests}
+            service.spreadsheets().batchUpdate(
+                spreadsheetId=spreadsheet_id,
+                body=batch_update_request
+            ).execute()
+            print(f"Deleted {len(requests)} charts from the sheet.")
+        else:
+            print("No charts to delete.")
+
+    except HttpError as e:
+        print(f"HTTP error occurred while deleting charts: {e}")
+    except GoogleAuthError as e:
+        print(f"Authentication error occurred: {e}")
+    except Exception as e:
+        print(f"An error occurred while deleting charts: {e}")
+
+
+
+
+
+
 def convert_dataframe(df, x_col, y_cols):
     """
     Convert columns in DataFrame to appropriate data types.
@@ -600,14 +643,15 @@ def write_data_to_sheet(service, spreadsheet_id, sheet_name, values):
         print(f"An error occurred while writing data: {e}")
 
 
-def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
+def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title, df):
     """
-    Add a chart to the Google Sheet with the legend positioned on the right.
+    Add a chart to the Google Sheet with the legend positioned on the right,
+    using the headings in row 1 (excluding the first heading) as the legend labels.
     """
     try:
         # Determine the data range for the chart
-        end_row_index = len(y_cols) + 1  # Assuming that the number of rows matches the length of y_cols
-        
+        end_row_index = df.shape[0] + 1  # Data rows plus the header row
+
         # Create the requests to add the chart
         requests = [
             {
@@ -629,9 +673,9 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
                                                 'sources': [
                                                     {
                                                         'sheetId': sheet_id,
-                                                        'startRowIndex': 1,  # Assuming the first row is headers
+                                                        'startRowIndex': 1,  # Data starts from the 2nd row (index 1)
                                                         'endRowIndex': end_row_index,
-                                                        'startColumnIndex': 0,
+                                                        'startColumnIndex': 0,  # x_col (dates) in the first column
                                                         'endColumnIndex': 1
                                                     }
                                                 ]
@@ -646,15 +690,16 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
                                                 'sources': [
                                                     {
                                                         'sheetId': sheet_id,
-                                                        'startRowIndex': 1,
+                                                        'startRowIndex': 1,  # Data starts from the 2nd row (index 1)
                                                         'endRowIndex': end_row_index,
-                                                        'startColumnIndex': i,
-                                                        'endColumnIndex': i + 1
+                                                        'startColumnIndex': col_index + 1,  # Skip first column (dates)
+                                                        'endColumnIndex': col_index + 2
                                                     }
                                                 ]
                                             }
-                                        }
-                                    } for i in range(1, len(y_cols) + 1)
+                                        },
+                                        'targetAxis': 'LEFT_AXIS'
+                                    } for col_index in range(len(y_cols))
                                 ]
                             }
                         },
@@ -673,7 +718,7 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
                 }
             }
         ]
-        
+
         # Execute the batch update request
         batch_update_request = {'requests': requests}
         service.spreadsheets().batchUpdate(
@@ -700,6 +745,9 @@ def user_requested_graph(df, x_col, y_cols, title):
         sheet_id = 2079660690  # The specific sheet ID of the output sheet
         service = build('sheets', 'v4', credentials=SCOPED_CREDS)
 
+        # Delete all charts from the sheet
+        delete_all_charts_from_sheet(service, spreadsheet_id, sheet_id)
+
         # Convert the DataFrame to correct data types
         df = convert_dataframe(df, x_col, y_cols)
 
@@ -711,8 +759,8 @@ def user_requested_graph(df, x_col, y_cols, title):
         # Write data to the sheet
         write_data_to_sheet(service, spreadsheet_id, sheet_name, values)
 
-        # Add a chart to the sheet
-        add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title)
+        # Add a chart to the sheet, now passing the df argument
+        add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title, df)
 
     except HttpError as e:
         print(f"HTTP error occurred: {e}")
