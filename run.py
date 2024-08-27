@@ -611,18 +611,20 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
         end_row_index = len(y_cols) + 1  # Assuming that the number of rows matches the length of y_cols
         
         # Create the requests to add the chart
+        # Define your chart specifications
         requests = [
             {
                 'addChart': {
                     'chart': {
                         'spec': {
-                            'title': title,
+                            'title': 'My Line Chart',
                             'basicChart': {
                                 'chartType': 'LINE',
                                 'legendPosition': 'RIGHT_LEGEND',  # Position the legend on the right
+                                'headerCount': 1,  # This sets the first row as headers
                                 'axis': [
-                                    {'position': 'BOTTOM_AXIS', 'title': x_col},
-                                    {'position': 'LEFT_AXIS', 'title': 'Values'}
+                                    {'position': 'BOTTOM_AXIS', 'title': x_col},  # X-axis title
+                                    {'position': 'LEFT_AXIS', 'title': 'Values'}  # Y-axis title
                                 ],
                                 'domains': [
                                     {
@@ -631,7 +633,7 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
                                                 'sources': [
                                                     {
                                                         'sheetId': sheet_id,
-                                                        'startRowIndex': 1,  # Assuming the first row is headers
+                                                        'startRowIndex': 0,  # Data starts in the header
                                                         'endRowIndex': end_row_index,
                                                         'startColumnIndex': 0,
                                                         'endColumnIndex': 1
@@ -648,7 +650,7 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
                                                 'sources': [
                                                     {
                                                         'sheetId': sheet_id,
-                                                        'startRowIndex': 0,
+                                                        'startRowIndex': 0,  # Data starts in the header
                                                         'endRowIndex': end_row_index,
                                                         'startColumnIndex': col_index,
                                                         'endColumnIndex': col_index + 1
@@ -665,7 +667,7 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
                                 'anchorCell': {
                                     'sheetId': sheet_id,
                                     'rowIndex': 0,
-                                    'columnIndex': len(y_cols) + 2  # Adjusted columnIndex to avoid overlap
+                                    'columnIndex': len(y_cols) + 2  # Adjust to place the chart appropriately
                                 },
                                 'offsetXPixels': 0,
                                 'offsetYPixels': 0
@@ -675,13 +677,14 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
                 }
             }
         ]
-        
+
         # Execute the batch update request
         batch_update_request = {'requests': requests}
         service.spreadsheets().batchUpdate(
             spreadsheetId=spreadsheet_id,
             body=batch_update_request
         ).execute()
+
         print("Chart has been created in the Google Sheet")
     except HttpError as e:
         print(f"HTTP error occurred while creating the chart: {e}")
