@@ -569,6 +569,11 @@ def data_initialisation_and_validation():
 def convert_dataframe(df, x_col, y_cols):
     """
     Convert columns in DataFrame to appropriate data types.
+
+    Parameters:
+    - df : The DataFrame containing the data to be converted.
+    - x_col : The name of the column to be converted to datetime format.
+    - y_cols : A list of column names to be converted to numeric format.
     """
     # Convert the x_col to datetime if it represents dates
     df.loc[:, x_col] = pd.to_datetime(df[x_col], errors='coerce')
@@ -582,6 +587,12 @@ def convert_dataframe(df, x_col, y_cols):
 def write_data_to_sheet(service, spreadsheet_id, sheet_name, values):
     """
     Write data to the specified Google Sheet.
+    
+    Parameters:
+    - service: Authorized Google Sheets API service instance.
+    - spreadsheet_id: The ID of the Google Spreadsheet.
+    - sheet_name: The name of the sheet within the spreadsheet.
+    - values: A list of lists, where each inner list represents a row of data to be written.
     """
     try:
         body = {'values': values}
@@ -604,7 +615,16 @@ def write_data_to_sheet(service, spreadsheet_id, sheet_name, values):
 
 def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
     """
-    Add a chart to the Google Sheet with the legend positioned on the right.
+    Add a chart to the Google Sheet with the legend positioned on the right,
+    and configure the chart to use the first row as headers.
+    
+    Args:
+        service: Google Sheets API service instance.
+        spreadsheet_id: ID of the spreadsheet.
+        sheet_id: ID of the sheet within the spreadsheet.
+        x_col: The header name or index of the column to be used for the x-axis.
+        y_cols: List of header names or indices of the columns to be used for the y-axis (multiple series).
+        title: Title of the chart.
     """
     try:
         # Determine the data range for the chart
@@ -696,7 +716,16 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
 
 def user_requested_graph(df, x_col, y_cols, title):
     """
-    Write data to a Google Sheet and create a chart.
+    Writes data from a Pandas DataFrame to a specified Google Sheet and creates a chart.
+
+    This function takes a Pandas DataFrame, extracts specified columns, and writes the data 
+    to a Google Sheet. It then creates a chart in the Google Sheet using the specified columns.
+
+    Args:
+        df (pd.DataFrame): The DataFrame containing the data to be written to the Google Sheet.
+        x_col (str): The name of the column in `df` to be used as the x-axis in the chart.
+        y_cols (list of str): A list of column names in `df` to be used as the y-axis in the chart.
+        title (str): The title of the chart to be created in the Google Sheet
     """
     try:
         # Define the Google Sheet ID and the range where data will be written
@@ -768,6 +797,12 @@ def get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet):
 def log_errors_to_sheet(error_log_data):
     """
     Write errors to the Google Sheet, starting at cell A25 and appending subsequent errors.
+
+    Parameters:
+    -----------
+    - error_log_data : A list where each item is a tuple containing error information.
+    - error_log : The Google Sheets worksheet object where errors will be logged.
+
     """
     # Determine where to start appending errors
     start_row = 4
