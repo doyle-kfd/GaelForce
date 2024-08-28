@@ -271,7 +271,7 @@ def validate_master_data(master_data, session_log_data, error_log_data):
     return validated_data_df
 
 
-def format_df_date():
+def format_df_date(validated_df):
     """
     Function to change the format of the time column date
     from yyyy-mm-dd to dd-mm-yyyy
@@ -402,7 +402,7 @@ def get_user_dates(validated_df):
     return user_input_start_date_str, user_input_end_date_str
 
 
-def filter_data_by_date(start_date, end_date):
+def filter_data_by_date(validated_df, start_date, end_date):
     """
     Filter the DataFrame by the specified date range.
     """
@@ -545,10 +545,6 @@ def get_output_selection(user_output_df, selected_columns, allow_screen, allow_g
             print("Invalid selection. Please enter a number between 1 and 4.")
 
 
-# Initialise the validated dataframe
-validated_df = None
-
-
 def data_initialisation_and_validation():
     """
     This function:
@@ -558,12 +554,12 @@ def data_initialisation_and_validation():
     - Stores the validated data for use in the session
     Its only run once per session
     """
-    global validated_df
     clear_all_sheets()                                                                    # Initialise Sheets On Load
     master_data, session_log_data, error_log_data = load_marine_data_input_sheet()        # Load the marine date for validation
     validated_df = validate_master_data(master_data, session_log_data, error_log_data)    # Create a validated data frame for use in the app
     print("Validated DF\n\n\n")
     print(validated_df)
+    return validated_df
 
 
 def convert_dataframe(df, x_col, y_cols):
@@ -829,8 +825,10 @@ def main():
     - Getting user input for date ranges
     - Filtering the dataframe based on date ranges from user
     """
-    global validated_df  # status of validated_df
     error_log_data = []
+
+    # Initialise the sheets and validate the data
+    validated_df = data_initialisation_and_validation()
 
     # Check to see if the data has been validated
     if validated_df is None:
@@ -838,7 +836,7 @@ def main():
         return  # Exit the function early if validation is not done
 
     # Convert the data frame date format to dd-mm-yyyy
-    format_df_date()
+    format_df_date(validated_df)
 
     # Outer Loop - get dates from user for specified range
     while True:
@@ -857,7 +855,7 @@ def main():
         print(f"Date Range - End: {user_input_end_date}")
 
         # Filter the dataframe based on the date range
-        date_filtered_df = filter_data_by_date(user_input_start_date, user_input_end_date)
+        date_filtered_df = filter_data_by_date(validated_df, user_input_start_date, user_input_end_date)
 
         # Format the dataframe for display, converting date format to dd-mm-yyyy
         working_data_df = format_df_data_for_display(date_filtered_df)
@@ -881,10 +879,6 @@ def main():
     if error_log_data:
         error_log_data = [[str(item) for item in sublist] for sublist in error_log_data]
         error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)), 'A25')
-
-
-# Initialise the sheets and validate the data
-data_initialisation_and_validation()
 
 
 main()
