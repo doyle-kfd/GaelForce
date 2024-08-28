@@ -93,8 +93,14 @@ def load_marine_data_input_sheet():
 
 def check_for_outliers(df):
     """
-    The purpose of the function is to check for outliers
-    using Z-Score method
+    Identifies outliers in a given DataFrame using the Z-Score method.
+    
+    The function calculates the Z-Score for each value in the DataFrame and identifies 
+    outliers as any value with an absolute Z-Score greater than 3. These outliers are 
+    typically considered to be statistically significant deviations from the mean.
+
+    Args:
+    - df (pandas.DataFrame): The input DataFrame containing numerical data to check for outliers.
     """
     z_scores = zscore(df)                            # calculate a z score for all values in dataframe
     abs_z_scores = abs(z_scores)                     # take the absolute value
@@ -104,13 +110,29 @@ def check_for_outliers(df):
 
 def validate_master_data(master_data, session_log_data, error_log_data):
     """
-    This purpose of this function is to take the masterdata set and
-    validate it for errors, based on:
-    - Missing Values
-    - Duplicate Rows
-    - Outliers
-    - Inconsistancy
-    I create a dataframe taking input from the marine_data_m2 masterdata.
+    Validates the master data for a marine data set by performing the following checks:
+    
+    1. **Missing Values:** Identifies and logs rows with missing values. 
+       - Missing values are replaced with NaN for consistent handling.
+       - Rows containing missing data are removed after logging the issue.
+       
+    2. **Duplicate Rows:** Detects and logs duplicate rows in the data set.
+       - Duplicates are identified and removed, and the details of these rows are logged.
+       
+    3. **Outliers:** Checks for outliers in specific numerical columns.
+       - Outliers are detected in columns such as AtmosphericPressure, WindSpeed, WaveHeight, and temperatures.
+       - Outliers are logged in separate logs specific to each type of data (e.g., Atmospheric, Wind, Wave, Temp).
+       
+    4. **Date Inconsistencies:** Validates the format of the date and time column.
+       - Ensures that date and time values match a specified pattern (ISO 8601 format).
+       - Logs any rows with inconsistent date formats and attempts to correct them.
+       
+    The function also updates session and error logs in Google Sheets for tracking the validation process. 
+
+    Args:
+        master_data (list): The input master data set where the first row contains column headers.
+        session_log_data (list): A list to accumulate session log entries.
+        error_log_data (list): A list to accumulate error log entries.
     """
     # Initialise log lists
     date_time_log_data = []  # Initialize date_time_log_data here
@@ -290,8 +312,24 @@ def format_df_date(validated_df):
 
 def validate_input_dates(date_str, reference, df_first_date, df_last_date):
     """
-    function to take input values for start date and end date
-    checking to see they are within the ranges available
+    Validates an input date string to ensure it is in the correct format, represents a valid calendar date, and falls within the specified date range.
+
+    This function performs the following tasks:
+    1. Converts the input date string `date_str` to a `datetime` object.
+    2. Checks that the date is in 'dd-mm-yyyy' format and is a valid date.
+    3. Validates the day, month, and year individually, ensuring:
+       - The month is between 1 and 12.
+       - The day is within the correct range for the specified month (taking into account leap years for February).
+       - The date falls within the available date range specified by `df_first_date` and `df_last_date`.
+    4. Returns the validated date as a `datetime` object if all checks pass.
+    5. Raises a `ValueError` if the date is invalid, out of range, or incorrectly formatted.
+
+    Args:
+    - date_str (str): The date string to be validated, expected in 'dd-mm-yyyy' format.
+    - reference (str): A string indicating whether the date is a "start" or "end" date, used for error messaging.
+    - df_first_date (str): The earliest available date in the dataset, in 'dd-mm-yyyy' format.
+    - df_last_date (str): The latest available date in the dataset, in 'dd-mm-yyyy' format.
+
     """
     try:
         # Convert the input to a datetime object
@@ -341,6 +379,9 @@ def get_user_dates(validated_df):
     - displays the date range available in master data
     - asks for input start date
     - asks for input end date
+
+    Args:
+    - validated_df (pd.DataFrame): A DataFrame containing a 'time' column with date and time data.
     """
     # Declare variable for later use
     error_log_data = []
@@ -407,7 +448,15 @@ def get_user_dates(validated_df):
 
 def filter_data_by_date(validated_df, start_date, end_date):
     """
-    Filter the DataFrame by the specified date range.
+    Filter the DataFrame to include only rows within the specified date range.
+
+    This function filters the input DataFrame based on a date range defined by `start_date` and `end_date`.
+    It assumes the DataFrame contains a 'date_only' column with dates formatted as 'day-month-year'.
+
+    Args:
+    - validated_df (pd.DataFrame): The input DataFrame containing a 'date_only' 
+    - start_date (pd.Timestamp or str): The start date of the range to filter. 
+    - end_date (pd.Timestamp or str): The end date of the range to filter. 
     """
     return validated_df[
         (pd.to_datetime(validated_df['date_only'], format='%d-%m-%Y') >= start_date) &
@@ -417,7 +466,14 @@ def filter_data_by_date(validated_df, start_date, end_date):
 
 def format_df_data_for_display(date_filtered_df):
     """
-    Format the DataFrame for display, converting the 'time' column to the desired format.
+    Format the DataFrame for display by converting the 'time' column to a specific datetime format.
+
+    This function takes a DataFrame with a 'time' column, creates a copy of it, and formats the 'time'
+    column into a string representation with the format 'day-month-year hour:minute:second'. This ensures
+    that the datetime values are presented in a user-friendly format suitable for display purposes.
+
+    Args:
+    - date_filtered_df (pd.DataFrame): The input DataFrame containing at least a 'time' column with datetime values.
     """
     # Create a copy of date_filtered_df to avoid modifying the original DataFrame
     working_data_df = date_filtered_df.copy()
@@ -430,7 +486,18 @@ def format_df_data_for_display(date_filtered_df):
 
 def get_data_selection():
     """
-    Get the user's selection of data columns to display.
+    Prompts the user to select data columns to display from a predefined set of options.
+
+    The function presents a menu of options for selecting different types of data to display. The user can choose from:
+    1. All Data
+    2. Atmospheric Pressure
+    3. Wind Speed and Gust
+    4. Wave Height, Wave Period, and Mean Wave Direction
+    5. Air Temperature and Sea Temperature
+    6. Exit Output Options
+
+    The function will continuously prompt the user until a valid selection is made or the user opts to exit. 
+    If the user inputs an invalid selection, an error message is displayed, and the error details are logged.
     """
     # Initialise selection storage
     selected_columns = []
