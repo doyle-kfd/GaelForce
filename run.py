@@ -488,7 +488,16 @@ def get_data_selection():
 
 def determine_output_options(num_rows):
     """
-    Determine what output options are allowed based on the number of rows.
+    Determine the allowed output options based on the number of rows in a dataset.
+
+    Args:
+    - num_rows (int): The number of rows in the dataset.
+
+    Returns:
+    tuple: A tuple containing three boolean values:
+        - allow_screen (bool): Whether to allow displaying the data on the screen.
+        - allow_graph (bool): Whether to allow generating graphical representations (e.g., charts).
+        - allow_sheet (bool): Whether to allow exporting the data to a spreadsheet.
     """
     # Check to see how many rows there are in the user output dataframe
     if num_rows <= 30:
