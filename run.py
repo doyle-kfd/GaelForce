@@ -906,10 +906,19 @@ def get_continue_yn():
 def main():
     """
     Main function that controls all the functionality of the application
-    - Loading Master Data
-    - Data validation
-    - Getting user input for date ranges
-    - Filtering the dataframe based on date ranges from user
+    
+    This function performs the following tasks:
+    1. Prompts the user to continue or exit the application.
+    2. Initializes and validates the master data.
+    3. Checks if data validation was successful and proceeds if valid.
+    4. Formats the validated data frame's date columns.
+    5. Allows the user to specify a date range for filtering the data.
+    6. Filters the data frame based on the user-specified date range.
+    7. Formats the filtered data frame for display purposes.
+    8. Provides options for users to select specific data columns for output.
+    9. Determines and manages output options based on the number of rows in the data.
+    10. Generates output based on user preferences and choices.
+    11. Logs and writes error data to an error log sheet if applicable.
     """
     error_log_data = []
 
