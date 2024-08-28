@@ -2,6 +2,7 @@ import gspread
 import pandas as pd
 import numpy as np
 from google.oauth2.service_account import Credentials
+from oauth2client.service_account import ServiceAccountCredentials
 from gspread_dataframe import set_with_dataframe
 from scipy.stats import zscore
 from googleapiclient.discovery import build
@@ -22,6 +23,7 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('marine_data_m2')
 
+
 # define the variables used to acccess each of the sheets in the Google Sheet
 unvalidated_master_data = SHEET.worksheet('marine_data_master_data_2020_2024')   # Master Data file
 validated_master_data = SHEET.worksheet('validated_master_data')                 # Validated Master Data for use
@@ -36,6 +38,19 @@ atmos_outlier_log = SHEET.worksheet('atmos_outliers')
 wind_outlier_log = SHEET.worksheet('wind_outliers')
 wave_outlier_log = SHEET.worksheet('wave_outliers')
 temp_outlier_log = SHEET.worksheet('temp_outliers')
+
+# define url links to each worksheet tab
+marine_master_data_url = "Tab: marine_data_master_data_2020_2024 - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing0"
+validated_master_data_ulr = "Tab: validated_master_data - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing178716219"
+user_data_output_url = "Tab: user_data_output - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing911199205"
+session_log_url = "\nTab: session_log\nURL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing410413428"
+gael_force_error_log_url = "Tab: gael_force_error_log - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing1094726921"
+atmos_outliers_url = "Tab: atmos_outliers - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing410485236"
+wind_outliers_url = "Tab: wind_outliers - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing594709402"
+wave_outliers_url = "Tab: wave_outliers - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing691663590"
+temp_outliers_url = "Tab: temp_outliers - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing697757766"
+date_time_url = "Tab: date_time - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing2036646154"
+graphical_output_data = "Tab: graphical_output_data - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing2079660690"
 
 
 def df_to_list_of_lists(df):
@@ -56,7 +71,7 @@ def clear_all_sheets():
     print("Starting Google Sheet Initialisation\n")
     sheets = [
         validated_master_data, user_data_output, session_log, error_log,
-        atmos_outlier_log, wind_outlier_log, wave_outlier_log, temp_outlier_log, date_time_log
+        atmos_outlier_log, wind_outlier_log, wave_outlier_log, temp_outlier_log, date_time_log, graphical_output_sheet
     ]
     for sheet in sheets:
         sheet.clear()
@@ -70,6 +85,8 @@ def load_marine_data_input_sheet():
     Then the master data dataframe is populated with the values
     of the master data google sheet
     """
+    print("We are opening a session log.\n")
+    print(f"The link to the session log is:\n\n{session_log_url}")
     # Initialise log lists
     session_log_data = [['Session Log Started'], [str(pd.Timestamp.now())]]
     error_log_data = [['Error Log Started'], [str(pd.Timestamp.now())]]
@@ -81,6 +98,7 @@ def load_marine_data_input_sheet():
 
     # Create Dataframe with all data from google input sheet
     print("     Master Data Loading Start")
+    print
     master_data = unvalidated_master_data.get_all_values()
     print("     Master Data Loading Complete\n")
     session_log_data.append(['Master Data Finished Loading'])
@@ -1008,7 +1026,6 @@ def get_continue_yn():
         log_errors_to_sheet(error_log_data)
 
 
-
 def main():
     """
     Main function that controls all the functionality of the application
@@ -1027,7 +1044,6 @@ def main():
     11. Logs and writes error data to an error log sheet if applicable.
     """
     error_log_data = []
-
 
     while True:
 
