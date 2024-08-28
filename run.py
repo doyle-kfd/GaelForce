@@ -507,6 +507,22 @@ def determine_output_options(num_rows):
 
 
 def get_output_selection(user_output_df, selected_columns, allow_screen, allow_graph, allow_sheet, num_rows):
+    """
+    Prompts the user to select an output option for a DataFrame and performs the corresponding action.
+
+    This function provides an interactive loop that allows the user to choose how they want to handle the output
+    of the provided DataFrame (`user_output_df`). The options include displaying data on the screen, plotting a graph
+    in the browser, writing data to a Google Sheet, or exiting the loop.
+
+    Args:
+    - user_output_df (pd.DataFrame): The DataFrame to be processed and outputted based on user selection.
+    - selected_columns (list of str): The list of column names available in `user_output_df` for graphing or other operations.
+    - allow_screen (bool): Flag indicating whether the option to display data on the screen is available.
+    - allow_graph (bool): Flag indicating whether the option to generate a graph is available.
+    - allow_sheet (bool): Flag indicating whether the option to write data to a Google Sheet is available.
+    - num_rows (int): Number of rows in `user_output_df`. Used to determine how many rows to display on the screen.
+    """
+
     # Inner loop allowing user select different output options
     while True:
         # Get the action from user with validation
@@ -802,8 +818,9 @@ def user_requested_graph(df, x_col, y_cols, title):
 def get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet):
     """
     Function to prompt the user for output selection and ensure that only valid numbers are allowed.
-    Its been modified for conditional logic to check of the output is
-    too large for the screen. Conidered <= 20 rows of data
+    Its been modified for conditional logic to check if the output is
+    too large for the screen. Conidered > 30 rows of data
+
     - allow_screen controls if user can print to screen
     - allow_graph controls if user can send datat to graph
     - allow_sheet controls if usre can write to sheet
@@ -864,8 +881,21 @@ def log_errors_to_sheet(error_log_data):
 
 def get_continue_yn():
     """
-    Introduce the app to the user
-    ask them if they want to  continue
+    Introduces the application to the user and prompts them to decide whether they want to continue.
+
+    The function displays an introduction message about the application, which consists of two parts:
+    - Data Validation
+    - Data Interrogation
+
+    It then enters a loop asking the user if they want to continue. The user should input 'y' for yes or 'n' for no.
+    If the user inputs 'y', the function returns 'y' and continues. If the user inputs 'n', the application exits.
+    If the user inputs an invalid response, an error message is displayed, logged, and the prompt is repeated.
+
+    The function logs any errors related to invalid user input and provides feedback to the user accordingly.
+    
+    Returns:
+        str: The user's response ('y' to continue or 'n' to exit).
+
     """
     error_log_data = []
     # Display app introduction
@@ -906,7 +936,7 @@ def get_continue_yn():
 def main():
     """
     Main function that controls all the functionality of the application
-    
+
     This function performs the following tasks:
     1. Prompts the user to continue or exit the application.
     2. Initializes and validates the master data.
@@ -921,6 +951,7 @@ def main():
     11. Logs and writes error data to an error log sheet if applicable.
     """
     error_log_data = []
+
 
     while True:
 
