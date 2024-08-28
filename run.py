@@ -5,6 +5,8 @@ from google.oauth2.service_account import Credentials
 from gspread_dataframe import set_with_dataframe
 from scipy.stats import zscore
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from google.auth.exceptions import GoogleAuthError
 
 
 SCOPE = [
@@ -552,9 +554,12 @@ def data_initialisation_and_validation():
     Its only run once per session
     """
     print("\n\n >>>>> Phase 1. Starting Data Validation Process <<<<<\n\n")
-    clear_all_sheets()                                                                    # Initialise Sheets On Load
-    master_data, session_log_data, error_log_data = load_marine_data_input_sheet()        # Load the marine data for validation
-    validated_df = validate_master_data(master_data, session_log_data, error_log_data)    # Create a validated data frame for use in the app
+    # Initialise Sheets On Load
+    clear_all_sheets()
+    # Load the marine data for validation                                                                    
+    master_data, session_log_data, error_log_data = load_marine_data_input_sheet()
+    # Create a validated data frame for use in the app        
+    validated_df = validate_master_data(master_data, session_log_data, error_log_data)    
 
     return validated_df
 
@@ -563,7 +568,7 @@ def convert_dataframe(df, x_col, y_cols):
     """
     Convert columns in DataFrame to appropriate data types.
 
-    Parameters:
+    Args:
     - df : The DataFrame containing the data to be converted.
     - x_col : The name of the column to be converted to datetime format.
     - y_cols : A list of column names to be converted to numeric format.
@@ -581,7 +586,7 @@ def write_data_to_sheet(service, spreadsheet_id, sheet_name, values):
     """
     Write data to the specified Google Sheet.
     
-    Parameters:
+    Args:
     - service: Authorized Google Sheets API service instance.
     - spreadsheet_id: The ID of the Google Spreadsheet.
     - sheet_name: The name of the sheet within the spreadsheet.
@@ -604,6 +609,50 @@ def write_data_to_sheet(service, spreadsheet_id, sheet_name, values):
         print(f"An error occurred while writing data: {e}")
 
 
+def delete_existing_charts(service, spreadsheet_id):
+    """
+    Check if there are existing charts in the specified Google Sheet and delete them if found.
+
+    Args:
+    - service: Google Sheets API service instance.
+    - spreadsheet_id: ID of the spreadsheet.
+    """
+    try:
+        # Retrieve the spreadsheet information
+        spreadsheet = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
+
+        # Extract sheet information
+        sheets = spreadsheet.get('sheets', [])
+        charts_to_delete = []
+
+        # Iterate over sheets to find charts
+        for sheet in sheets:
+            sheet_id = sheet.get('properties', {}).get('sheetId')
+            sheet_name = sheet.get('properties', {}).get('title')
+            if 'charts' in sheet:
+                for chart in sheet.get('charts', []):
+                    chart_id = chart.get('chartId')
+                    charts_to_delete.append(chart_id)
+
+        # Delete charts if any are found
+        if charts_to_delete:
+            requests = [{'deleteEmbeddedObject': {'objectId': chart_id}} for chart_id in charts_to_delete]
+            batch_update_request = {'requests': requests}
+            service.spreadsheets().batchUpdate(
+                spreadsheetId=spreadsheet_id,
+                body=batch_update_request
+            ).execute()
+
+            print(f"Deleted {len(charts_to_delete)} charts from the Google Sheet.")
+        else:
+            print("No charts found to delete.")
+
+    except HttpError as e:
+        print(f"HTTP error occurred: {e}")
+    except GoogleAuthError as e:
+        print(f"Authentication error occurred: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
@@ -612,13 +661,14 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
     and configure the chart to use the first row as headers.
     
     Args:
-        service: Google Sheets API service instance.
-        spreadsheet_id: ID of the spreadsheet.
-        sheet_id: ID of the sheet within the spreadsheet.
-        x_col: The header name or index of the column to be used for the x-axis.
-        y_cols: List of header names or indices of the columns to be used for the y-axis (multiple series).
-        title: Title of the chart.
+    - service: Google Sheets API service instance.
+    - spreadsheet_id: ID of the spreadsheet.
+    - sheet_id: ID of the sheet within the spreadsheet.
+    - x_col: The header name or index of the column to be used for the x-axis.
+    - y_cols: List of header names or indices of the columns to be used for the y-axis (multiple series).
+    - title: Title of the chart.
     """
+    delete_existing_charts(service, spreadsheet_id)
     try:
         # Determine the data range for the chart
         end_row_index = len(y_cols) + 1  # Assuming that the number of rows matches the length of y_cols
@@ -715,10 +765,10 @@ def user_requested_graph(df, x_col, y_cols, title):
     to a Google Sheet. It then creates a chart in the Google Sheet using the specified columns.
 
     Args:
-        df (pd.DataFrame): The DataFrame containing the data to be written to the Google Sheet.
-        x_col (str): The name of the column in `df` to be used as the x-axis in the chart.
-        y_cols (list of str): A list of column names in `df` to be used as the y-axis in the chart.
-        title (str): The title of the chart to be created in the Google Sheet
+    - df (pd.DataFrame): The DataFrame containing the data to be written to the Google Sheet.
+    - x_col (str): The name of the column in `df` to be used as the x-axis in the chart.
+    - y_cols (list of str): A list of column names in `df` to be used as the y-axis in the chart.
+    - title (str): The title of the chart to be created in the Google Sheet
     """
     try:
         # Define the Google Sheet ID and the range where data will be written
@@ -791,8 +841,7 @@ def log_errors_to_sheet(error_log_data):
     """
     Write errors to the Google Sheet, starting at cell A25 and appending subsequent errors.
 
-    Parameters:
-    -----------
+    Args:
     - error_log_data : A list where each item is a tuple containing error information.
     - error_log : The Google Sheets worksheet object where errors will be logged.
 
@@ -821,7 +870,7 @@ def get_continue_yn():
     error_log_data = []
     # Display app introduction
     print("\n\nWelcome to the Weather Data Analysis Application.\n")
-    print("This application has two parts:\n 1) Data Validation\n 2) Data Interrogation.\n")
+    print("This application has two parts:\n - Data Validation\n - Data Interrogation.\n")
 
     # Start the query loop
     while True:
