@@ -112,7 +112,7 @@ def validate_master_data(master_data, session_log_data, error_log_data):
     """
     # Initialise log lists
     date_time_log_data = []  # Initialize date_time_log_data here
-
+    print("\n\n >>>>> Validate Master Data <<<<<\n\n\n")
     print("\nData Validation Started       <<<<<\n\n\n")
     validated_data_df = pd.DataFrame()
 
@@ -263,10 +263,11 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)), 'A1')
         date_time_log.update(df_to_list_of_lists(pd.DataFrame(date_time_log_data)), 'A1')
 
-    print("\nData Validation Completed     <<<<<\n\n\n")
+    print("\n\n\n >>>>> Master Data Validation Completed <<<<<\n\n\n")
     print("Writing Validated Data To Google Sheets Started      <<<<<\n")
     set_with_dataframe(validated_master_data, validated_data_df)
     print("Writing Validated Data To Google Sheets Completed    <<<<<\n")
+    print("\n\n >>>>> Phase 1. Completed Data Validation Process <<<<<\n\n")
 
     return validated_data_df
 
@@ -282,7 +283,7 @@ def format_df_date(validated_df):
     validated_df['time'] = pd.to_datetime(validated_df['time'], format='%d-%m-%YT%H:%M:%S', errors='coerce', dayfirst=True)
     # Extract the date component only, ignoring the time
     validated_df['date_only'] = validated_df['time'].dt.strftime('%d-%m-%Y')
-    print(validated_df['date_only'])
+
 
 
 def validate_input_dates(date_str, reference, df_first_date, df_last_date):
@@ -373,7 +374,7 @@ def get_user_dates(validated_df):
 
     # Prompt user for end date
     while True:
-        user_input_end_date = input(f"Please enter the end date\n (in the format 'dd-mm-yyyy'\n within {df_first_date} and {df_last_date}): ")
+        user_input_end_date = input(f"\n\nPlease enter the end date\n (in the format 'dd-mm-yyyy'\n within {df_first_date} and {df_last_date}): ")
         # Check to see if the user wants to quit
         if user_input_end_date.lower() == 'quit':
             print("Exiting program as requested.")
@@ -422,10 +423,6 @@ def format_df_data_for_display(date_filtered_df):
     # Convert the 'time' column to the desired format in the copied DataFrame
     working_data_df['time'] = pd.to_datetime(working_data_df['time']).dt.strftime('%d-%m-%Y %H:%M:%S')
 
-    # Now formatted_df will have the 'time' column formatted as 'dd-mm-yyyy 00:00:00'
-    print("Date For Output:")
-    print(working_data_df)
-
     return working_data_df
 
 
@@ -444,7 +441,7 @@ def get_data_selection():
         print("3: Wind Speed and Gust")
         print("4: Wave Height, Wave Period, and Mean Wave Direction")
         print("5: Air Temperature and Sea Temperature")
-        print("6: Exit Ouput Options")
+        print("6: Exit Ouput Options\n")
 
         # take users selected number
         selection = input("Enter the number corresponding to your selection: ")
@@ -492,8 +489,8 @@ def determine_output_options(num_rows):
     Determine what output options are allowed based on the number of rows.
     """
     # Check to see how many rows there are in the user output dataframe
-    if num_rows <= 20:
-        # If there are 20 or fewer rows, allow all actions
+    if num_rows <= 30:
+        # If there are 30 or fewer rows, allow all actions
         allow_screen = True
         allow_graph = True
         allow_sheet = True
@@ -502,12 +499,12 @@ def determine_output_options(num_rows):
         allow_screen = False
         allow_graph = True
         allow_sheet = True
-        print(f"\nNote: Displaying the first 20 rows. There are {num_rows - 20} more rows not displayed.")
+        print(f"\nNote: Displaying the first 30 rows. There are {num_rows - 30} more rows not displayed.")
 
     return allow_screen, allow_graph, allow_sheet
 
 
-def get_output_selection(user_output_df, selected_columns, allow_screen, allow_graph, allow_sheet):
+def get_output_selection(user_output_df, selected_columns, allow_screen, allow_graph, allow_sheet, num_rows):
     # Inner loop allowing user select different output options
     while True:
         # Get the action from user with validation
@@ -517,8 +514,8 @@ def get_output_selection(user_output_df, selected_columns, allow_screen, allow_g
             if output_selection == 1:
                 # Print the first 20 rows if more than 20
                 print("\nSelected Data:")
-                if num_rows > 20:
-                    print(user_output_df.head(20))
+                if num_rows > 30:
+                    print(user_output_df.head(30))
                 else:
                     print(user_output_df)
             # If user selects 2 - Output goes to graph in browser
@@ -554,11 +551,11 @@ def data_initialisation_and_validation():
     - Stores the validated data for use in the session
     Its only run once per session
     """
+    print("\n\n >>>>> Phase 1. Starting Data Validation Process <<<<<\n\n")
     clear_all_sheets()                                                                    # Initialise Sheets On Load
-    master_data, session_log_data, error_log_data = load_marine_data_input_sheet()        # Load the marine date for validation
+    master_data, session_log_data, error_log_data = load_marine_data_input_sheet()        # Load the marine data for validation
     validated_df = validate_master_data(master_data, session_log_data, error_log_data)    # Create a validated data frame for use in the app
-    print("Validated DF\n\n\n")
-    print(validated_df)
+
     return validated_df
 
 
@@ -633,7 +630,7 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
                 'addChart': {
                     'chart': {
                         'spec': {
-                            'title': 'My Line Chart',
+                            'title': title,
                             'basicChart': {
                                 'chartType': 'LINE',
                                 'legendPosition': 'RIGHT_LEGEND',  # Position the legend on the right
@@ -816,6 +813,46 @@ def log_errors_to_sheet(error_log_data):
     # Clear the error_log_data list after logging
     error_log_data = []
 
+def get_continue_yn():
+    """
+    Introduce the app to the user
+    ask them if they want to  continue
+    """
+    error_log_data = []
+    # Display app introduction
+    print("\n\nWelcome to the Weather Data Analysis Application.\n")
+    print("This application has two parts:\n 1) Data Validation\n 2) Data Interrogation.\n")
+
+    # Start the query loop
+    while True:
+        # take users selected number
+        proceed = input("Do you want to continue? (y/n):").strip().lower()
+        try:
+            # Create relevant data subset dataframes for processing
+            if proceed == 'y':
+                return proceed
+                break
+            elif proceed == 'n':
+                print("Exiting Application... Good Bye")
+                exit()
+            else:
+                raise ValueError("Selection must be (y/n)")
+
+                # If a valid selection is made, break out of the loop and return the selected columns
+                break
+
+        except ValueError as e:
+            # Append error details to the error log and inform the user
+            error_log_data.append(["User Input Error", str(pd.Timestamp.now())])
+            error_log_data.append(["User Input Error", str(e)])
+            print(f"User Input Error:\n")
+            print(f"Invalid input.>>> {proceed} <<<\n A detailed description of the error\n has been appended to the error log.")
+            print("\nPlease enter (n) to exit\n")
+
+        # Write any errors to log
+        log_errors_to_sheet(error_log_data)
+
+
 
 def main():
     """
@@ -827,53 +864,58 @@ def main():
     """
     error_log_data = []
 
-    # Initialise the sheets and validate the data
-    validated_df = data_initialisation_and_validation()
-
-    # Check to see if the data has been validated
-    if validated_df is None:
-        print("Error: Data has not been validated")
-        return  # Exit the function early if validation is not done
-
-    # Convert the data frame date format to dd-mm-yyyy
-    format_df_date(validated_df)
-
-    # Outer Loop - get dates from user for specified range
     while True:
-        # Get dates from user to interrogate validated data frame
-        user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
 
-        # Check if user selected "quit"
-        if user_input_start_date_str is None or user_input_end_date_str is None:
-            print("\n\nDate input was canceled. Exiting program.\n\n")
-            exit()  # Exit app
+        decision = get_continue_yn()
 
-        # Convert user input dates to the format used in validated_df
-        user_input_start_date = user_input_start_date_str
-        user_input_end_date = user_input_end_date_str
-        print(f"Date Range - Beginning: {user_input_start_date}")
-        print(f"Date Range - End: {user_input_end_date}")
+        # Initialise the sheets and validate the data
+        validated_df = data_initialisation_and_validation()
 
-        # Filter the dataframe based on the date range
-        date_filtered_df = filter_data_by_date(validated_df, user_input_start_date, user_input_end_date)
+        # Check to see if the data has been validated
+        if validated_df is None:
+            print("Error: Data has not been validated\n The application cannot continue..... \nBye...")
+            exit()
+        else:
+                print("\n\n >>>>> Phase 2. Data Interrogation Starting <<<<<\n\n")
+        # Convert the data frame date format to dd-mm-yyyy
+        format_df_date(validated_df)
 
-        # Format the dataframe for display, converting date format to dd-mm-yyyy
-        working_data_df = format_df_data_for_display(date_filtered_df)
-        # Middle loop - getting specific data set for user output
+        # Outer Loop - get dates from user for specified range
         while True:
-            # Get users selection for data output columns
-            selected_columns = get_data_selection()
-            if not selected_columns:
-                break
-            user_output_df = working_data_df[selected_columns]
-            num_rows = len(user_output_df)
-            print(f"\nThere are {num_rows} rows of data.     <<<<<\n")
+            # Get dates from user to interrogate validated data frame
+            user_input_start_date_str, user_input_end_date_str = get_user_dates(validated_df)
 
-            # Determine output options based on rows
-            allow_screen, allow_graph, allow_sheet = determine_output_options(num_rows)
+            # Check if user selected "quit"
+            if user_input_start_date_str is None or user_input_end_date_str is None:
+                print("\n\nDate input was canceled. Exiting program.\n\n")
+                exit()  # Exit app
 
-            # Create output based on user selection
-            get_output_selection(user_output_df, selected_columns, allow_screen, allow_graph, allow_sheet)
+            # Convert user input dates to the format used in validated_df
+            user_input_start_date = user_input_start_date_str
+            user_input_end_date = user_input_end_date_str
+            print(f"Date Range - Beginning: {user_input_start_date}")
+            print(f"Date Range - End: {user_input_end_date}")
+
+            # Filter the dataframe based on the date range
+            date_filtered_df = filter_data_by_date(validated_df, user_input_start_date, user_input_end_date)
+
+            # Format the dataframe for display, converting date format to dd-mm-yyyy
+            working_data_df = format_df_data_for_display(date_filtered_df)
+            # Middle loop - getting specific data set for user output
+            while True:
+                # Get users selection for data output columns
+                selected_columns = get_data_selection()
+                if not selected_columns:
+                    break
+                user_output_df = working_data_df[selected_columns]
+                num_rows = len(user_output_df)
+                print(f"\nThere are {num_rows} rows of data.     <<<<<\n")
+
+                # Determine output options based on rows
+                allow_screen, allow_graph, allow_sheet = determine_output_options(num_rows)
+
+                # Create output based on user selection
+                get_output_selection(user_output_df, selected_columns, allow_screen, allow_graph, allow_sheet, num_rows)
 
     # Write error log to error log sheet if there are errors to be written
     if error_log_data:
