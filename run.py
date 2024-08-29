@@ -40,6 +40,7 @@ wave_outlier_log = SHEET.worksheet('wave_outliers')
 temp_outlier_log = SHEET.worksheet('temp_outliers')
 
 # define url links to each worksheet tab
+google_worksheet = "Worksheet: marine_data_m2 - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing"
 marine_master_data_url = "Tab: marine_data_master_data_2020_2024 - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing0"
 validated_master_data_ulr = "Tab: validated_master_data - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing178716219"
 user_data_output_url = "Tab: user_data_output - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing911199205"
@@ -50,7 +51,7 @@ wind_outliers_url = "Tab: wind_outliers - URL: https://docs.google.com/spreadshe
 wave_outliers_url = "Tab: wave_outliers - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing691663590"
 temp_outliers_url = "Tab: temp_outliers - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing697757766"
 date_time_url = "Tab: date_time - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing2036646154"
-graphical_output_data = "Tab: graphical_output_data - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing2079660690"
+graphical_output_data_url = "Tab: graphical_output_data - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing2079660690"
 
 
 def df_to_list_of_lists(df):
@@ -69,6 +70,7 @@ def clear_all_sheets():
     the app is run
     """
     print("Starting Google Sheet Initialisation\n")
+    print(f"The link to the google sheet is:\n\n{google_worksheet}\n\n")
     sheets = [
         validated_master_data, user_data_output, session_log, error_log,
         atmos_outlier_log, wind_outlier_log, wave_outlier_log, temp_outlier_log, date_time_log, graphical_output_sheet
@@ -85,8 +87,10 @@ def load_marine_data_input_sheet():
     Then the master data dataframe is populated with the values
     of the master data google sheet
     """
-    print("We are opening a session log.\n")
-    print(f"The link to the session log is:\n\n{session_log_url}")
+    print("Opening a session log.\n")
+    print(f"The link to the session log is:\n\n{session_log_url}\n\n")
+    print("Opening a error log.\n")
+    print(f"The link to the error log is:\n\n{gael_force_error_log_url}\n\n")
     # Initialise log lists
     session_log_data = [['Session Log Started'], [str(pd.Timestamp.now())]]
     error_log_data = [['Error Log Started'], [str(pd.Timestamp.now())]]
@@ -248,15 +252,19 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         if not atmospheric_outliers.empty:
             atmos_outlier_log.update(df_to_list_of_lists(atmospheric_outliers), 'A1')
             print("     Atmospheric Outliers Were Found: Check Atmos Outlier Log")
+            print(f"    \nThe link to the Atmospheric Outliers log is:\n\n{atmos_outliers_url}\n\n")
         if not wind_outliers.empty:
             wind_outlier_log.update(df_to_list_of_lists(wind_outliers), 'A1')
-            print("     Wind Outliers Were Found:        Check Wind Outlier Log")
+            print("     Wind Outliers Were Found: Check Atmos Outlier Log")
+            print(f"    \nThe link to the Wind Outliers log is:\n\n{wind_outliers_url}\n\n")
         if not wave_outliers.empty:
             wave_outlier_log.update(df_to_list_of_lists(wave_outliers), 'A1')
             print("     Wave Outliers Were Found:        Check Wave Outlier Log")
+            print(f"    \nThe link to the Wave Outliers log is:\n\n{wave_outliers_url}\n\n")
         if not temp_outliers.empty:
             temp_outlier_log.update(df_to_list_of_lists(temp_outliers), 'A1')
             print("     Temp Outliers Were Found:        Check Temp Outlier Log\n")
+            print(f"    \nThe link to the Temp Outliers log is:\n\n{temp_outliers_url}\n\n")
 
         print("Outlier Validation Completed     <<<<<\n\n\n")
 
@@ -291,9 +299,10 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         date_time_log_data = [[str(item) for item in sublist] for sublist in date_time_log_data]
 
         # Write all accumulated data at once
-        # session_log.update(session_log_data, 'A10')
-        # error_log.update(error_log_data, 'A10')
-        date_time_log.update(date_time_log_data, 'A1')  # Log inconsistent date formats here
+        # Log inconsistent date formats here
+        date_time_log.update(date_time_log_data, 'A1')
+        print(f"    \nDate Inconsistancies found are written here:\n\n{date_time_url}\n\n")
+          
 
     except Exception as e:
         session_log_data.append([f"An error occurred during validation: {e}"])
@@ -309,6 +318,7 @@ def validate_master_data(master_data, session_log_data, error_log_data):
     print("Writing Validated Data To Google Sheets Started      <<<<<\n")
     set_with_dataframe(validated_master_data, validated_data_df)
     print("Writing Validated Data To Google Sheets Completed    <<<<<\n")
+    print(f"    \nThe validated master data is written here:\n\n{validated_master_data_ulr}\n\n")
     print("\n\n >>>>> Phase 1. Completed Data Validation Process <<<<<\n\n")
 
     return validated_data_df
@@ -644,6 +654,7 @@ def get_output_selection(user_output_df, selected_columns, allow_screen, allow_g
                 # Option 3 Write Data To Google Sheet
                 set_with_dataframe(user_data_output, user_output_df)
                 print("\nData Written To Google Sheet")
+                print(f"    \nData Output Can Be Found Here:\n\n{user_data_output_url}\n\n")
             # If user select 4 - loop ends
             elif output_selection == 4:
                 # Option 4 Exit the loop
@@ -859,6 +870,7 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols, title):
         ).execute()
 
         print("Chart has been created in the Google Sheet")
+        print(f"    \nYou Can View Your Chart Here:\n\n{graphical_output_data_url}\n\n")
     except HttpError as e:
         print(f"HTTP error occurred while creating the chart: {e}")
     except GoogleAuthError as e:
@@ -1058,6 +1070,8 @@ def main():
             exit()
         else:
                 print("\n\n >>>>> Phase 2. Data Interrogation Starting <<<<<\n\n")
+                print("Please Check The Error Log Files For Any Errors Found")
+                print(f"    \nSession Errors Can Be Found Here:\n\n{gael_force_error_log_url}\n\n")
         # Convert the data frame date format to dd-mm-yyyy
         format_df_date(validated_df)
 
