@@ -40,18 +40,77 @@ wave_outlier_log = SHEET.worksheet('wave_outliers')
 temp_outlier_log = SHEET.worksheet('temp_outliers')
 
 # define url links to each worksheet tab
-google_worksheet = "Worksheet: marine_data_m2 - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing"
-marine_master_data_url = "Tab: marine_data_master_data_2020_2024 - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing0"
-validated_master_data_ulr = "Tab: validated_master_data - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing178716219"
-user_data_output_url = "Tab: user_data_output - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing911199205"
-session_log_url = "\nTab: session_log\nURL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing410413428"
-gael_force_error_log_url = "Tab: gael_force_error_log - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing1094726921"
-atmos_outliers_url = "Tab: atmos_outliers - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing410485236"
-wind_outliers_url = "Tab: wind_outliers - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing594709402"
-wave_outliers_url = "Tab: wave_outliers - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing691663590"
-temp_outliers_url = "Tab: temp_outliers - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing697757766"
-date_time_url = "Tab: date_time - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing2036646154"
-graphical_output_data_url = "Tab: graphical_output_data - URL: https://docs.google.com/spreadsheets/d/1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing2079660690"
+google_worksheet = (
+    "Worksheet: marine_data_m2 - URL: "
+    "https://docs.google.com/spreadsheets/d/"
+    "1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing"
+)
+
+marine_master_data_url = (
+    "Tab: marine_data_master_data_2020_2024 - URL: "
+    "https://docs.google.com/spreadsheets/d/"
+    "1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing0"
+)
+
+validated_master_data_ulr = (
+    "Tab: validated_master_data - URL: "
+    "https://docs.google.com/spreadsheets/d/"
+    "1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing178716219"
+)
+
+user_data_output_url = (
+    "Tab: user_data_output - URL: "
+    "https://docs.google.com/spreadsheets/d/"
+    "1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing911199205"
+)
+
+session_log_url = (
+    "Tab: session_log - URL: "
+    "https://docs.google.com/spreadsheets/d/"
+    "1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing410413428"
+)
+
+gael_force_error_log_url = (
+    "Tab: gael_force_error_log - URL: "
+    "https://docs.google.com/spreadsheets/d/"
+    "1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing1094726921"
+)
+
+atmos_outliers_url = (
+    "Tab: atmos_outliers - URL: "
+    "https://docs.google.com/spreadsheets/d/"
+    "1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing410485236"
+)
+
+wind_outliers_url = (
+    "Tab: wind_outliers - URL: "
+    "https://docs.google.com/spreadsheets/d/"
+    "1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing594709402"
+)
+
+wave_outliers_url = (
+    "Tab: wave_outliers - URL: "
+    "https://docs.google.com/spreadsheets/d/"
+    "1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing691663590"
+)
+
+temp_outliers_url = (
+    "Tab: temp_outliers - URL: "
+    "https://docs.google.com/spreadsheets/d/"
+    "1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing697757766"
+)
+
+date_time_url = (
+    "Tab: date_time - URL: "
+    "https://docs.google.com/spreadsheets/d/"
+    "1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing2036646154"
+)
+
+graphical_output_data_url = (
+    "Tab: graphical_output_data - URL: "
+    "https://docs.google.com/spreadsheets/d/"
+    "1cjDvLdeYgYip8yfg4w531LKcoRlo8t8gb8esrI30H6U/edit?usp=sharing2079660690"
+)
 
 
 def df_to_list_of_lists(df):
