@@ -459,23 +459,31 @@ def format_df_date(validated_df):
 
 def validate_input_dates(date_str, reference, df_first_date, df_last_date):
     """
-    Validates an input date string to ensure it is in the correct format, represents a valid calendar date, and falls within the specified date range.
+    Validates an input date string to ensure it is in the correct format, 
+    represents a valid calendar date, and falls within the specified date range.
 
     This function performs the following tasks:
     1. Converts the input date string `date_str` to a `datetime` object.
     2. Checks that the date is in 'dd-mm-yyyy' format and is a valid date.
     3. Validates the day, month, and year individually, ensuring:
        - The month is between 1 and 12.
-       - The day is within the correct range for the specified month (taking into account leap years for February).
-       - The date falls within the available date range specified by `df_first_date` and `df_last_date`.
+       - The day is within the correct range for the specified month 
+         (taking into account leap years for February).
+       - The date falls within the available date range specified by 
+         `df_first_date` and `df_last_date`.
     4. Returns the validated date as a `datetime` object if all checks pass.
-    5. Raises a `ValueError` if the date is invalid, out of range, or incorrectly formatted.
+    5. Raises a `ValueError` if the date is invalid, out of range, 
+       or incorrectly formatted.
 
     Args:
-    - date_str (str): The date string to be validated, expected in 'dd-mm-yyyy' format.
-    - reference (str): A string indicating whether the date is a "start" or "end" date, used for error messaging.
-    - df_first_date (str): The earliest available date in the dataset, in 'dd-mm-yyyy' format.
-    - df_last_date (str): The latest available date in the dataset, in 'dd-mm-yyyy' format.
+    - date_str (str): The date string to be validated, expected in 
+      'dd-mm-yyyy' format.
+    - reference (str): A string indicating whether the date is a "start" or 
+      "end" date, used for error messaging.
+    - df_first_date (str): The earliest available date in the dataset, 
+      in 'dd-mm-yyyy' format.
+    - df_last_date (str): The latest available date in the dataset, 
+      in 'dd-mm-yyyy' format.
 
     """
     try:
@@ -523,7 +531,8 @@ def validate_input_dates(date_str, reference, df_first_date, df_last_date):
     except ValueError as ve:
         # Re-raise the error with a custom message
         raise ValueError(
-            f"Invalid date: {ve}. Please enter the date in 'dd-mm-yyyy' format.")
+            f"Invalid date: {ve}. Please enter the date in  'dd-mm-yyyy' "
+            f"format.")
 
 
 def get_user_dates(validated_df):
@@ -534,7 +543,8 @@ def get_user_dates(validated_df):
     - asks for input end date
 
     Args:
-    - validated_df (pd.DataFrame): A DataFrame containing a 'time' column with date and time data.
+    - validated_df (pd.DataFrame): A DataFrame containing a 'time' 
+      column with date and time data.
     """
     # Declare variable for later use
     error_log_data = []
@@ -553,7 +563,8 @@ def get_user_dates(validated_df):
     # Prompt user for start date, dont go to end date until date is acceptable and formatted
     while True:
         user_input_start_date = input(
-            f"Please enter the start date\n (in the format 'dd-mm-yyyy'\nbetween {df_first_date} and {df_last_date}): ")
+            f"Please enter the start date\n (in the format 'dd-mm-yyyy' "
+            f"\nbetween {df_first_date} and {df_last_date}): ")
         # Check to see if the user wants to quit
         if user_input_start_date.lower() == 'quit':
             print("Exiting program as requested.")
@@ -573,13 +584,15 @@ def get_user_dates(validated_df):
             print("Start Date Error:\n")
             print(f"You Entered: {user_input_start_date}  <<<<<\n")
             print(
-                f"\n A detailed description of the error\n has been appended to the error log.")
+                f"\n A detailed description of the error\n has been  "
+                f"appended to the error log.")
             print("\nPlease enter the date in 'dd-mm-yyyy' format.\n\n")
 
     # Prompt user for end date
     while True:
         user_input_end_date = input(
-            f"\n\nPlease enter the end date\n (in the format 'dd-mm-yyyy'\n within {df_first_date} and {df_last_date}): ")
+            f"\n\nPlease enter the end date\n (in the format 'dd-mm-yyyy'\n  "
+            f"within {df_first_date} and {df_last_date}): ")
         # Check to see if the user wants to quit
         if user_input_end_date.lower() == 'quit':
             print("Exiting program as requested.")
@@ -587,7 +600,8 @@ def get_user_dates(validated_df):
 
         try:
             user_input_end_date = validate_input_dates(user_input_end_date,
-                                                       "end", df_first_date,
+                                                       "end", 
+                                                       df_first_date,
                                                        df_last_date)
             if user_input_end_date < user_input_start_date:
                 raise ValueError(
@@ -600,10 +614,12 @@ def get_user_dates(validated_df):
             print(f"End Date Error:\n")
             print(f"You Entered: {user_input_start_date}  <<<<<\n")
             print(
-                f"\n A detailed description of the error\n has been appended to the error log.")
+                f"\n A detailed description of the error\n has been appended "
+                f"to the error log.")
             print("\nPlease enter the date in 'dd-mm-yyyy' format.\n\n")
 
-    # Convert validated start and end dates to string format for further processing
+    # Convert validated start and end dates to string format 
+    # for further processing
     user_input_start_date_str = user_input_start_date.strftime('%d-%m-%Y')
     user_input_end_date_str = user_input_end_date.strftime('%d-%m-%Y')
 
@@ -617,8 +633,10 @@ def filter_data_by_date(validated_df, start_date, end_date):
     """
     Filter the DataFrame to include only rows within the specified date range.
 
-    This function filters the input DataFrame based on a date range defined by `start_date` and `end_date`.
-    It assumes the DataFrame contains a 'date_only' column with dates formatted as 'day-month-year'.
+    This function filters the input DataFrame based on a date range defined by 
+    `start_date` and `end_date`.
+    It assumes the DataFrame contains a 'date_only' column with dates formatted
+    as 'day-month-year'.
 
     Args:
     - validated_df (pd.DataFrame): The input DataFrame containing a 'date_only'
@@ -635,16 +653,22 @@ def filter_data_by_date(validated_df, start_date, end_date):
 
 def format_df_data_for_display(date_filtered_df):
     """
-    Format the DataFrame for display by converting the 'time' column to a specific datetime format.
+    Format the DataFrame for display by converting the 'time' column to a 
+    specific datetime format.
 
-    This function takes a DataFrame with a 'time' column, creates a copy of it, and formats the 'time'
-    column into a string representation with the format 'day-month-year hour:minute:second'. This ensures
-    that the datetime values are presented in a user-friendly format suitable for display purposes.
+    This function takes a DataFrame with a 'time' column, creates a copy of it,
+    and formats the 'time'
+    column into a string representation with the format 'day-month-year 
+    hour:minute:second'. This ensures
+    that the datetime values are presented in a user-friendly format suitable 
+    for display purposes.
 
     Args:
-    - date_filtered_df (pd.DataFrame): The input DataFrame containing at least a 'time' column with datetime values.
+    - date_filtered_df (pd.DataFrame): The input DataFrame containing at least 
+    a 'time' column with datetime values.
     """
-    # Create a copy of date_filtered_df to avoid modifying the original DataFrame
+    # Create a copy of date_filtered_df to avoid modifying the original 
+    # DataFrame
     working_data_df = date_filtered_df.copy()
 
     # Convert the 'time' column to the desired format in the copied DataFrame
@@ -656,9 +680,11 @@ def format_df_data_for_display(date_filtered_df):
 
 def get_data_selection():
     """
-    Prompts the user to select data columns to display from a predefined set of options.
+    Prompts the user to select data columns to display from a predefined 
+    set of options.
 
-    The function presents a menu of options for selecting different types of data to display. The user can choose from:
+    The function presents a menu of options for selecting different 
+    types of data to display. The user can choose from:
     1. All Data
     2. Atmospheric Pressure
     3. Wind Speed and Gust
@@ -666,8 +692,10 @@ def get_data_selection():
     5. Air Temperature and Sea Temperature
     6. Exit Output Options
 
-    The function will continuously prompt the user until a valid selection is made or the user opts to exit.
-    If the user inputs an invalid selection, an error message is displayed, and the error details are logged.
+    The function will continuously prompt the user until a valid selection 
+    is made or the user opts to exit.
+    If the user inputs an invalid selection, an error message is displayed, 
+    and the error details are logged.
     """
     # Initialise selection storage
     selected_columns = []
@@ -709,9 +737,11 @@ def get_data_selection():
                 return []  # Exit the function, returning an empty list.
             else:
                 raise ValueError(
-                    "Selection out of range. Please select a number between 1 and 6.")
+                    "Selection out of range. Please select a number between "
+                    "1 and 6.")
 
-            # If a valid selection is made, break out of the loop and return the selected columns
+            # If a valid selection is made, break out of the loop and 
+            # return the selected columns
             break
 
         except ValueError as e:
@@ -723,7 +753,8 @@ def get_data_selection():
             print(f"Output Selection Error:\n")
             print(f"You Entered: {selection}    <<<<<\n")
             print(
-                f"Invalid data selection input.\n A detailed description of the error\n has been appended to the error log.")
+                f"Invalid data selection input.\n A detailed description "
+                f"of the error\n has been appended to the error log.")
             print("\nPlease enter 1, 2, 3, 4, 5, 6 to exit\n")
 
         # Write any errors to log
@@ -734,16 +765,20 @@ def get_data_selection():
 
 def determine_output_options(num_rows):
     """
-    Determine the allowed output options based on the number of rows in a dataset.
+    Determine the allowed output options based on the number of rows 
+    in a dataset.
 
     Args:
     - num_rows (int): The number of rows in the dataset.
 
     Returns:
     tuple: A tuple containing three boolean values:
-        - allow_screen (bool): Whether to allow displaying the data on the screen.
-        - allow_graph (bool): Whether to allow generating graphical representations (e.g., charts).
-        - allow_sheet (bool): Whether to allow exporting the data to a spreadsheet.
+        - allow_screen (bool): Whether to allow displaying the 
+          data on the screen.
+        - allow_graph (bool): Whether to allow generating graphical 
+          representations (e.g., charts).
+        - allow_sheet (bool): Whether to allow exporting the data to 
+          a spreadsheet.
     """
     # Check to see how many rows there are in the user output dataframe
     if num_rows <= 30:
@@ -757,7 +792,8 @@ def determine_output_options(num_rows):
         allow_graph = True
         allow_sheet = True
         print(
-            f"\nNote: Displaying the first 30 rows. There are {num_rows - 30} more rows not displayed.")
+            f"\nNote: Displaying the first 30 rows. There are {num_rows - 30} "
+            f"more rows not displayed.")
 
     return allow_screen, allow_graph, allow_sheet
 
@@ -765,19 +801,28 @@ def determine_output_options(num_rows):
 def get_output_selection(user_output_df, selected_columns, allow_screen,
                          allow_graph, allow_sheet, num_rows):
     """
-    Prompts the user to select an output option for a DataFrame and performs the corresponding action.
+    Prompts the user to select an output option for a DataFrame and performs 
+    the corresponding action.
 
-    This function provides an interactive loop that allows the user to choose how they want to handle the output
-    of the provided DataFrame (`user_output_df`). The options include displaying data on the screen, plotting a graph
+    This function provides an interactive loop that allows the user to choose 
+    how they want to handle the output
+    of the provided DataFrame (`user_output_df`). The options include 
+    displaying data on the screen, plotting a graph
     in the browser, writing data to a Google Sheet, or exiting the loop.
 
     Args:
-    - user_output_df (pd.DataFrame): The DataFrame to be processed and outputted based on user selection.
-    - selected_columns (list of str): The list of column names available in `user_output_df` for graphing or other operations.
-    - allow_screen (bool): Flag indicating whether the option to display data on the screen is available.
-    - allow_graph (bool): Flag indicating whether the option to generate a graph is available.
-    - allow_sheet (bool): Flag indicating whether the option to write data to a Google Sheet is available.
-    - num_rows (int): Number of rows in `user_output_df`. Used to determine how many rows to display on the screen.
+    - user_output_df (pd.DataFrame): The DataFrame to be processed and 
+      outputted based on user selection.
+    - selected_columns (list of str): The list of column names available in 
+      `user_output_df` for graphing or other operations.
+    - allow_screen (bool): Flag indicating whether the option to display data 
+      on the screen is available.
+    - allow_graph (bool): Flag indicating whether the option to generate a 
+      graph is available.
+    - allow_sheet (bool): Flag indicating whether the option to write data to 
+      a Google Sheet is available.
+    - num_rows (int): Number of rows in `user_output_df`. Used to determine 
+      how many rows to display on the screen.
     """
 
     # Inner loop allowing user select different output options
@@ -800,7 +845,8 @@ def get_output_selection(user_output_df, selected_columns, allow_screen,
                 # Option 2: Output to graph
                 # Plotting weather data over time
                 x_col = 'time'
-                # Refactored to select columns except the time column for y axis
+                # Refactored to select columns except the time column 
+                # for y axis
                 y_cols = [col for col in selected_columns if col != x_col]
                 title = 'Weather Data Over Time'
                 user_requested_graph(user_output_df, x_col, y_cols, title)
@@ -810,7 +856,8 @@ def get_output_selection(user_output_df, selected_columns, allow_screen,
                 set_with_dataframe(user_data_output, user_output_df)
                 print("\nData Written To Google Sheet")
                 print(
-                    f"    \nData Output Can Be Found Here:\n\n{user_data_output_url}\n\n")
+                    f"    \nData Output Can Be Found Here:"
+                    f"\n\n{user_data_output_url}\n\n")
             # If user select 4 - loop ends
             elif output_selection == 4:
                 # Option 4 Exit the loop
@@ -832,7 +879,8 @@ def data_initialisation_and_validation():
     """
     print("\n\n >>>>> Phase 1. Starting Data Validation Process <<<<<\n\n")
     # Load the marine data for validation
-    master_data, session_log_data, error_log_data = load_marine_data_input_sheet()
+    master_data, session_log_data, error_log_data =  (
+        load_marine_data_input_sheet())
     # Create a validated data frame for use in the app
     validated_df = validate_master_data(master_data, session_log_data,
                                         error_log_data)
@@ -867,7 +915,8 @@ def write_data_to_sheet(service, spreadsheet_id, sheet_name, values):
     - service: Authorized Google Sheets API service instance.
     - spreadsheet_id: The ID of the Google Spreadsheet.
     - sheet_name: The name of the sheet within the spreadsheet.
-    - values: A list of lists, where each inner list represents a row of data to be written.
+    - values: A list of lists, where each inner list represents a 
+      row of data to be written.
     """
     try:
         body = {'values': values}
@@ -888,7 +937,8 @@ def write_data_to_sheet(service, spreadsheet_id, sheet_name, values):
 
 def delete_existing_charts(service, spreadsheet_id):
     """
-    Check if there are existing charts in the specified Google Sheet and delete them if found.
+    Check if there are existing charts in the specified Google Sheet and 
+    delete them if found.
 
     Args:
     - service: Google Sheets API service instance.
@@ -923,7 +973,8 @@ def delete_existing_charts(service, spreadsheet_id):
             ).execute()
 
             print(
-                f"Deleted {len(charts_to_delete)} charts from the Google Sheet.")
+                f"Deleted {len(charts_to_delete)} charts from "
+                f"the Google Sheet.")
         else:
             print("No charts found to delete.")
 
@@ -946,14 +997,16 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols,
     - spreadsheet_id: ID of the spreadsheet.
     - sheet_id: ID of the sheet within the spreadsheet.
     - x_col: The header name or index of the column to be used for the x-axis.
-    - y_cols: List of header names or indices of the columns to be used for the y-axis (multiple series).
+    - y_cols: List of header names or indices of the columns to be used for 
+      the y-axis (multiple series).
     - title: Title of the chart.
     """
     delete_existing_charts(service, spreadsheet_id)
     try:
         # Determine the data range for the chart
+        # Assuming that the number of rows matches the length of y_cols
         end_row_index = len(
-            y_cols) + 1  # Assuming that the number of rows matches the length of y_cols
+            y_cols) + 1  
 
         # Create the requests to add the chart
         # Define your chart specifications
@@ -983,8 +1036,10 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols,
                                                     {
                                                         'sheetId': sheet_id,
                                                         'startRowIndex': 0,
-                                                        # Data starts in the header
-                                                        'endRowIndex': end_row_index,
+                                                        # Data starts in 
+                                                        # the header
+                                                        'endRowIndex': 
+                                                            end_row_index,
                                                         'startColumnIndex': 0,
                                                         'endColumnIndex': 1
                                                     }
@@ -1001,10 +1056,14 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols,
                                                     {
                                                         'sheetId': sheet_id,
                                                         'startRowIndex': 0,
-                                                        # Data starts in the header
-                                                        'endRowIndex': end_row_index,
-                                                        'startColumnIndex': col_index,
-                                                        'endColumnIndex': col_index + 1
+                                                        # Data starts in 
+                                                        # the header
+                                                        'endRowIndex': 
+                                                            end_row_index,
+                                                        'startColumnIndex': 
+                                                            col_index,
+                                                        'endColumnIndex': 
+                                                            col_index + 1
                                                     }
                                                 ]
                                             }
@@ -1040,7 +1099,8 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols,
 
         print("Chart has been created in the Google Sheet")
         print(
-            f"    \nYou Can View Your Chart Here:\n\n{graphical_output_data_url}\n\n")
+            f"    \nYou Can View Your Chart Here:"
+            f"\n\n{graphical_output_data_url}\n\n")
     except HttpError as e:
         print(f"HTTP error occurred while creating the chart: {e}")
     except GoogleAuthError as e:
@@ -1051,15 +1111,21 @@ def add_chart_to_sheet(service, spreadsheet_id, sheet_id, x_col, y_cols,
 
 def user_requested_graph(df, x_col, y_cols, title):
     """
-    Writes data from a Pandas DataFrame to a specified Google Sheet and creates a chart.
+    Writes data from a Pandas DataFrame to a specified Google Sheet and 
+    creates a chart.
 
-    This function takes a Pandas DataFrame, extracts specified columns, and writes the data
-    to a Google Sheet. It then creates a chart in the Google Sheet using the specified columns.
+    This function takes a Pandas DataFrame, extracts specified columns, 
+    and writes the data
+    to a Google Sheet. It then creates a chart in the Google Sheet using the 
+    specified columns.
 
     Args:
-    - df (pd.DataFrame): The DataFrame containing the data to be written to the Google Sheet.
-    - x_col (str): The name of the column in `df` to be used as the x-axis in the chart.
-    - y_cols (list of str): A list of column names in `df` to be used as the y-axis in the chart.
+    - df (pd.DataFrame): The DataFrame containing the data to be written 
+    to the Google Sheet.
+    - x_col (str): The name of the column in `df` to be used as the x-axis 
+    in the chart.
+    - y_cols (list of str): A list of column names in `df` to be used as the 
+    y-axis in the chart.
     - title (str): The title of the chart to be created in the Google Sheet
     """
     try:
@@ -1096,7 +1162,8 @@ def user_requested_graph(df, x_col, y_cols, title):
 
 def get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet):
     """
-    Function to prompt the user for output selection and ensure that only valid numbers are allowed.
+    Function to prompt the user for output selection and ensure that only 
+    valid numbers are allowed.
     Its been modified for conditional logic to check if the output is
     too large for the screen. Conidered > 30 rows of data
 
@@ -1141,7 +1208,8 @@ def get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet):
             print(f"Output Selection Error:\n")
             print(f"You Entered: {user_input}  <<<<<\n")
             print(
-                f"\nA detailed description of the error\nhas been appended to the error log.")
+                f"\nA detailed description of the error\nhas been appended "
+                f"to the error log.")
             print("Invalid selection. Please enter a number between 1 and 4.")
 
         # Write any errors to log
@@ -1152,11 +1220,14 @@ def get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet):
 
 def log_errors_to_sheet(error_log_data):
     """
-    Write errors to the Google Sheet, starting at cell A25 and appending subsequent errors.
+    Write errors to the Google Sheet, starting at cell A25 and appending 
+    subsequent errors.
 
     Args:
-    - error_log_data : A list where each item is a tuple containing error information.
-    - error_log : The Google Sheets worksheet object where errors will be logged.
+    - error_log_data : A list where each item is a tuple containing error 
+      information.
+    - error_log : The Google Sheets worksheet object where errors will 
+      be logged.
 
     """
     # Determine where to start appending errors
@@ -1185,17 +1256,23 @@ def log_errors_to_sheet(error_log_data):
 
 def get_continue_yn():
     """
-    Introduces the application to the user and prompts them to decide whether they want to continue.
+    Introduces the application to the user and prompts them to decide 
+    whether they want to continue.
 
-    The function displays an introduction message about the application, which consists of two parts:
+    The function displays an introduction message about the application, 
+    which consists of two parts:
     - Data Validation
     - Data Interrogation
 
-    It then enters a loop asking the user if they want to continue. The user should input 'y' for yes or 'n' for no.
-    If the user inputs 'y', the function returns 'y' and continues. If the user inputs 'n', the application exits.
-    If the user inputs an invalid response, an error message is displayed, logged, and the prompt is repeated.
+    It then enters a loop asking the user if they want to continue. 
+    The user should input 'y' for yes or 'n' for no.
+    If the user inputs 'y', the function returns 'y' and continues. 
+    If the user inputs 'n', the application exits.
+    If the user inputs an invalid response, an error message is displayed, 
+    logged, and the prompt is repeated.
 
-    The function logs any errors related to invalid user input and provides feedback to the user accordingly.
+    The function logs any errors related to invalid user input and provides 
+    feedback to the user accordingly.
 
     Returns:
         str: The user's response ('y' to continue or 'n' to exit).
@@ -1205,7 +1282,8 @@ def get_continue_yn():
     # Display app introduction
     print("\n\nWelcome to the Weather Data Analysis Application.\n")
     print(
-        "This application has two parts:\n - Data Validation\n - Data Interrogation.\n")
+        "This application has two parts:\n - Data Validation\n - "
+        "Data Interrogation.\n")
 
     # Start the query loop
     # Start the query loop
@@ -1231,7 +1309,8 @@ def get_continue_yn():
             print(f"User Input Error:\n")
             print(f" Error: {e}\n")
             print(
-                f"Invalid input.>>> {proceed} <<<\n\nA detailed description of the error\n has been appended to the error log.")
+                f"Invalid input.>>> {proceed} <<<\n\nA detailed description "
+                f"of the error\n has been appended to the error log.")
             print("\nPlease enter (n) to exit\n")
 
         # Write any errors to log
@@ -1251,7 +1330,8 @@ def main():
     6. Filters the data frame based on the user-specified date range.
     7. Formats the filtered data frame for display purposes.
     8. Provides options for users to select specific data columns for output.
-    9. Determines and manages output options based on the number of rows in the data.
+    9. Determines and manages output options based on the number of rows 
+       in the data.
     10. Generates output based on user preferences and choices.
     11. Logs and writes error data to an error log sheet if applicable.
     """
@@ -1269,24 +1349,28 @@ def main():
         # Check to see if the data has been validated
         if validated_df is None:
             print(
-                "Error: Data has not been validated\n The application cannot continue..... \nBye...")
+                "Error: Data has not been validated\n The application cannot "
+                "continue..... \nBye...")
             exit()
         else:
             print("\n\n >>>>> Phase 2. Data Interrogation Starting <<<<<\n\n")
             print("Please Check The Error Log Files For Any Errors Found")
             print(
-                f"    \nSession Errors Can Be Found Here:\n\n{gael_force_error_log_url}\n\n")
+                f"    \nSession Errors Can Be Found Here:"
+                f"\n\n{gael_force_error_log_url}\n\n")
         # Convert the data frame date format to dd-mm-yyyy
         format_df_date(validated_df)
 
         # Outer Loop - get dates from user for specified range
         while True:
             # Get dates from user to interrogate validated data frame
-            user_input_start_date_str, user_input_end_date_str = get_user_dates(
-                validated_df)
+            user_input_start_date_str, user_input_end_date_str = (
+                get_user_dates(
+                validated_df))
 
             # Check if user selected "quit"
-            if user_input_start_date_str is None or user_input_end_date_str is None:
+            if (user_input_start_date_str is None or user_input_end_date_str 
+                    is None):
                 print("\n\nDate input was canceled. Exiting program.\n\n")
                 exit()  # Exit app
 
@@ -1301,7 +1385,8 @@ def main():
                                                    user_input_start_date,
                                                    user_input_end_date)
 
-            # Format the dataframe for display, converting date format to dd-mm-yyyy
+            # Format the dataframe for display, converting date format 
+            # to dd-mm-yyyy
             working_data_df = format_df_data_for_display(date_filtered_df)
             # Middle loop - getting specific data set for user output
             while True:
@@ -1314,8 +1399,9 @@ def main():
                 print(f"\nThere are {num_rows} rows of data.     <<<<<\n")
 
                 # Determine output options based on rows
-                allow_screen, allow_graph, allow_sheet = determine_output_options(
-                    num_rows)
+                allow_screen, allow_graph, allow_sheet = (
+                    determine_output_options(
+                    num_rows))
 
                 # Create output based on user selection
                 get_output_selection(user_output_df, selected_columns,
