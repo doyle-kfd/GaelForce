@@ -121,6 +121,44 @@ def df_to_list_of_lists(df):
     """
     return [df.columns.tolist()] + df.values.tolist()
 
+def check_google_sheet_access(credentials_path, sheet_name):
+    """
+    Checks the accessibility of a Google Sheet using provided credentials.
+
+    Args:
+    credentials_path (str): Path to the service account credentials JSON file.
+    sheet_name (str): The name of the Google Sheet to access.
+
+    Returns:
+    gspread.models.Worksheet: The first worksheet object if successful, None otherwise.
+    """
+    # Define the scope
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+
+    try:
+        # Load credentials
+        creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
+        client = gspread.authorize(creds)
+        
+        # Access the Google Sheet
+        sheet = client.open(sheet_name).sheet1  # Access the first sheet
+        print("Successfully accessed the Google Sheet!")
+        return sheet
+
+    except FileNotFoundError as e:
+        print(f"Error: The specified credentials file was not found.\nDetails: {e}")
+    except PermissionError as e:
+        print(f"Error: Permission denied while accessing the credentials file.\nDetails: {e}")
+    except gspread.exceptions.SpreadsheetNotFound as e:
+        print(f"Error: The specified Google Sheet was not found.\nDetails: {e}")
+    except gspread.exceptions.APIError as e:
+        print(f"Error: There was an API error when trying to access the Google Sheet.\nDetails: {e}")
+    except IOError as e:
+        print(f"Error: An I/O error occurred.\nDetails: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred.\nDetails: {e}")
+    
+    return None
 
 # Initialize the sheets for use
 def initialise_google_sheets():
@@ -128,6 +166,12 @@ def initialise_google_sheets():
     Function to clear all the google sheets data each time
     the app is run
     """
+    print("\n")
+    print("#######################################")
+    print("Initialising Necessary Files To Run App")
+    print("#######################################")
+    print("\n")
+    sheet = check_google_sheet_access('creds.json', 'marine_data_m2')
     print("Starting Google Sheet Initialisation\n")
     print(f"The link to the google sheet is:\n\n{google_worksheet}\n\n")
     sheets = [
@@ -437,7 +481,11 @@ def validate_master_data(master_data, session_log_data, error_log_data):
     print(
         f"    \nThe validated master data is written here:\n\n"
         f"{validated_master_data_ulr}\n\n")
-    print("\n\n >>>>> Phase 1. Completed Data Validation Process <<<<<\n\n")
+    print("\n")
+    print("#############################################################")
+    print("   >>>>>   Phase 1. Completed Data Validation Process   <<<<<")
+    print("#############################################################")
+    print("\n")
 
     return validated_data_df
 
@@ -558,7 +606,7 @@ def get_user_dates(validated_df):
     df_last_date = validated_df['time'].max().strftime('%d-%m-%Y')
     print(f"\n\nAvailable data range: {df_first_date} to {df_last_date}\n\n")
     print("You will be asked to enter a start date and and end date")
-    print("You can type 'quit' at any time to exit.\n")
+    print(">>> You can type 'quit' at any time to exit. <<<\n")
 
     # Prompt user for start date, dont go to end date until date is acceptable and formatted
     while True:
@@ -877,7 +925,11 @@ def data_initialisation_and_validation():
     - Stores the validated data for use in the session
     Its only run once per session
     """
-    print("\n\n >>>>> Phase 1. Starting Data Validation Process <<<<<\n\n")
+    print("\n")
+    print("#############################################################")
+    print(">>>>>   Phase 1. Starting Data Validation Process       <<<<<")
+    print("#############################################################")
+    print("\n")
     # Load the marine data for validation
     master_data, session_log_data, error_log_data =  (
         load_marine_data_input_sheet())
@@ -1353,7 +1405,11 @@ def main():
                 "continue..... \nBye...")
             exit()
         else:
-            print("\n\n >>>>> Phase 2. Data Interrogation Starting <<<<<\n\n")
+            print("\n")
+            print("#########################################################")
+            print("    >>>>> Phase 2. Data Interrogation Starting      <<<<<")
+            print("#########################################################")
+            print("\n")
             print("Please Check The Error Log Files For Any Errors Found")
             print(
                 f"    \nSession Errors Can Be Found Here:"
