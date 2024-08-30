@@ -235,6 +235,26 @@ def check_for_outliers(df):
     return df[outliers]  # return the dataframe of the outliers identified
 
 
+def handle_log_update(update_function, data, range, log_name):
+    """
+    Handles I/O operations with error checking and logging.
+    
+    Args:
+    - update_function (function): Function to perform the I/O operation.
+    - data (list): Data to be written or updated.
+    - range (str): Range in the sheet where the data should be written.
+    - log_name (str): Name of the log for error messages.
+    """
+    try:
+        update_function(data, range)
+        print(f"Successfully updated {log_name}.")
+    except Exception as e:
+        print(f"Error updating {log_name}: {e}")
+        # Log error to a separate error log or notify the user
+        # For example, you can append to a global error log list if needed
+        error_log_data.append([f"Error updating {log_name}: {e}"])
+
+
 def validate_master_data(master_data, session_log_data, error_log_data):
     """
     Validates the master data for a marine data set by performing the 
@@ -467,12 +487,22 @@ def validate_master_data(master_data, session_log_data, error_log_data):
 
     finally:
         # Convert log lists to strings and update Google Sheets
-        session_log.update(df_to_list_of_lists(pd.DataFrame(session_log_data)),
-                           'A1')
-        error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)),
-                         'A1')
-        date_time_log.update(
-            df_to_list_of_lists(pd.DataFrame(date_time_log_data)), 'A1')
+        handle_log_update(
+            session_log.update, df_to_list_of_lists(pd.DataFrame
+                                                    (session_log_data)),
+            'A1', 'session log'
+            )
+        handle_log_update(
+            error_log.update, df_to_list_of_lists(pd.DataFrame
+                                                (error_log_data)), 'A1',
+            'error log'
+            )
+        handle_log_update(
+            date_time_log.update,
+            df_to_list_of_lists(pd.DataFrame(date_time_log_data)), 'A1',
+            'date time log'
+            )
+
 
     print("\n\n\n >>>>> Master Data Validation Completed <<<<<\n\n\n")
     print("Writing Validated Data To Google Sheets Started      <<<<<\n")
@@ -1468,8 +1498,11 @@ def main():
     if error_log_data:
         error_log_data = [[str(item) for item in sublist] for sublist in
                           error_log_data]
-        error_log.update(df_to_list_of_lists(pd.DataFrame(error_log_data)),
-                         'A25')
-
+        print(f"The Error Log Contains:\n\n {error_log_data}")
+        handle_log_update(
+            error_log.update, df_to_list_of_lists(pd.DataFrame(
+                                                error_log_data)),   'A25',
+            'error log'
+            )
 
 main()
