@@ -193,27 +193,36 @@ def check_for_outliers(df):
 
 def validate_master_data(master_data, session_log_data, error_log_data):
     """
-    Validates the master data for a marine data set by performing the following checks:
+    Validates the master data for a marine data set by performing the 
+    following checks:
 
     1. **Missing Values:** Identifies and logs rows with missing values.
        - Missing values are replaced with NaN for consistent handling.
        - Rows containing missing data are removed after logging the issue.
 
     2. **Duplicate Rows:** Detects and logs duplicate rows in the data set.
-       - Duplicates are identified and removed, and the details of these rows are logged.
+       - Duplicates are identified and removed, and the details of these 
+         rows are logged.
 
     3. **Outliers:** Checks for outliers in specific numerical columns.
-       - Outliers are detected in columns such as AtmosphericPressure, WindSpeed, WaveHeight, and temperatures.
-       - Outliers are logged in separate logs specific to each type of data (e.g., Atmospheric, Wind, Wave, Temp).
+       - Outliers are detected in columns such as AtmosphericPressure, 
+         WindSpeed, WaveHeight, and temperatures.
+       - Outliers are logged in separate logs specific to each type of data 
+         (e.g., Atmospheric, Wind, Wave, Temp).
 
-    4. **Date Inconsistencies:** Validates the format of the date and time column.
-       - Ensures that date and time values match a specified pattern (ISO 8601 format).
-       - Logs any rows with inconsistent date formats and attempts to correct them.
+    4. **Date Inconsistencies:** Validates the format of the date and time 
+         column.
+       - Ensures that date and time values match a specified pattern 
+        (ISO 8601 format).
+       - Logs any rows with inconsistent date formats and attempts 
+         to correct them.
 
-    The function also updates session and error logs in Google Sheets for tracking the validation process.
+    The function also updates session and error logs in Google Sheets for 
+    tracking the validation process.
 
     Args:
-        master_data (list): The input master data set where the first row contains column headers.
+        master_data (list): The input master data set where the first row 
+        contains column headers.
         session_log_data (list): A list to accumulate session log entries.
         error_log_data (list): A list to accumulate error log entries.
     """
@@ -228,7 +237,8 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         # Create dataframe to work with
         df = pd.DataFrame(master_data[1:], columns=master_data[0])
 
-        # pick out the specific columns to be used in the application and create a master data frame
+        # pick out the specific columns to be used in the application and 
+        # create a master data frame
         master_df = df[['time', 'AtmosphericPressure', 'WindDirection',
                         'WindSpeed', 'Gust', 'WaveHeight', 'WavePeriod',
                         'MeanWaveDirection', 'AirTemperature',
@@ -281,7 +291,8 @@ def validate_master_data(master_data, session_log_data, error_log_data):
             keep=False).sum()
         if duplicates_found:
             print(
-                f"     There are {duplicates_found} duplicates in the working data set")
+                f"     There are {duplicates_found} duplicates in the  "
+                f"working data set")
             print("     Please check the error log")
             session_log_data.append(
                 [f'Duplicates found in data set: {duplicates_found}'])
@@ -331,24 +342,29 @@ def validate_master_data(master_data, session_log_data, error_log_data):
             print(
                 "     Atmospheric Outliers Were Found: Check Atmos Outlier Log")
             print(
-                f"    \nThe link to the Atmospheric Outliers log is:\n\n{atmos_outliers_url}\n\n")
+                f"    \nThe link to the Atmospheric Outliers log is: \n\
+                \n{atmos_outliers_url}\n\n")
         if not wind_outliers.empty:
             wind_outlier_log.update(df_to_list_of_lists(wind_outliers), 'A1')
             print("     Wind Outliers Were Found: Check Atmos Outlier Log")
             print(
-                f"    \nThe link to the Wind Outliers log is:\n\n{wind_outliers_url}\n\n")
+                f"    \nThe link to the Wind Outliers log is:\n\n"
+                f"{wind_outliers_url}\n\n")
         if not wave_outliers.empty:
             wave_outlier_log.update(df_to_list_of_lists(wave_outliers), 'A1')
             print(
                 "     Wave Outliers Were Found:        Check Wave Outlier Log")
             print(
-                f"    \nThe link to the Wave Outliers log is:\n\n{wave_outliers_url}\n\n")
+                f"    \nThe link to the Wave Outliers log is:\n\n"
+                f"{wave_outliers_url}\n\n")
         if not temp_outliers.empty:
             temp_outlier_log.update(df_to_list_of_lists(temp_outliers), 'A1')
             print(
-                "     Temp Outliers Were Found:        Check Temp Outlier Log\n")
+                "     Temp Outliers Were Found:        Check Temp  Outlier "
+                "Log\n")
             print(
-                f"    \nThe link to the Temp Outliers log is:\n\n{temp_outliers_url}\n\n")
+                f"    \nThe link to the Temp Outliers log is:\n\n"
+                f"{temp_outliers_url}\n\n")
 
         print("Outlier Validation Completed     <<<<<\n\n\n")
 
@@ -397,7 +413,8 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         # Log inconsistent date formats here
         date_time_log.update(date_time_log_data, 'A1')
         print(
-            f"    \nDate Inconsistancies found are written here:\n\n{date_time_url}\n\n")
+            f"    \nDate Inconsistancies found are written here: \n\
+            \n{date_time_url}\n\n")
 
 
     except Exception as e:
@@ -418,7 +435,8 @@ def validate_master_data(master_data, session_log_data, error_log_data):
     set_with_dataframe(validated_master_data, validated_data_df)
     print("Writing Validated Data To Google Sheets Completed    <<<<<\n")
     print(
-        f"    \nThe validated master data is written here:\n\n{validated_master_data_ulr}\n\n")
+        f"    \nThe validated master data is written here:\n\n"
+        f"{validated_master_data_ulr}\n\n")
     print("\n\n >>>>> Phase 1. Completed Data Validation Process <<<<<\n\n")
 
     return validated_data_df
