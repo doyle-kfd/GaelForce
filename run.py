@@ -30,7 +30,8 @@ user_data_output = SHEET.worksheet(
     'user_data_output')  # Sheet containing requested data output
 session_log = SHEET.worksheet('session_log')  # Errors sent to log
 error_log = SHEET.worksheet('gael_force_error_log')  # Errors sent to log
-date_time_log = SHEET.worksheet('date_time')  # Date Time format error log
+date_time__error_log = SHEET.worksheet(
+    'date_time_error_log')  # Date Time format error log
 graphical_output_sheet = SHEET.worksheet('graphical_output_data')
 
 # define the sheets to be user for outlier output
@@ -130,34 +131,49 @@ def check_google_sheet_access(credentials_path, sheet_name):
     sheet_name (str): The name of the Google Sheet to access.
 
     Returns:
-    gspread.models.Worksheet: The first worksheet object if successful, None otherwise.
+    gspread.models.Worksheet: The first worksheet object if successful,
+    None otherwise.
     """
     # Define the scope
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    scope = ["https://spreadsheets.google.com/feeds",
+             "https://www.googleapis.com/auth/drive"]
 
     try:
         # Load credentials
-        creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name(
+            credentials_path, scope
+            )
         client = gspread.authorize(creds)
-        
+
         # Access the Google Sheet
         sheet = client.open(sheet_name).sheet1  # Access the first sheet
         print("Successfully accessed the Google Sheet!")
         return sheet
 
     except FileNotFoundError as e:
-        print(f"Error: The specified credentials file was not found.\nDetails: {e}")
+        print(
+            f"Error: The specified credentials file was not found."
+            f"\nDetails: {e}"
+            )
     except PermissionError as e:
-        print(f"Error: Permission denied while accessing the credentials file.\nDetails: {e}")
+        print(
+            f"Error: Permission denied while accessing the credentials file."
+            f"\nDetails: {e}"
+            )
     except gspread.exceptions.SpreadsheetNotFound as e:
-        print(f"Error: The specified Google Sheet was not found.\nDetails: {e}")
+        print(
+            f"Error: The specified Google Sheet was not found.\nDetails: {e}"
+            )
     except gspread.exceptions.APIError as e:
-        print(f"Error: There was an API error when trying to access the Google Sheet.\nDetails: {e}")
+        print(
+            f"Error: There was an API error when trying to access the "
+            f"Google Sheet.\nDetails: {e}"
+            )
     except IOError as e:
         print(f"Error: An I/O error occurred.\nDetails: {e}")
     except Exception as e:
         print(f"An unexpected error occurred.\nDetails: {e}")
-    
+
     return None
 
 # Initialize the sheets for use
@@ -171,13 +187,14 @@ def initialise_google_sheets():
     print("Initialising Necessary Files To Run App")
     print("#######################################")
     print("\n")
-    sheet = check_google_sheet_access('creds.json', 'marine_data_m2')
+    sheet = check_google_sheet_access('creds.json',
+                                      'marine_data_m2')
     print("Starting Google Sheet Initialisation\n")
     print(f"The link to the google sheet is:\n\n{google_worksheet}\n\n")
     sheets = [
         validated_master_data, user_data_output, session_log, error_log,
         atmos_outlier_log, wind_outlier_log, wave_outlier_log,
-        temp_outlier_log, date_time_log, graphical_output_sheet
+        temp_outlier_log, date_time__error_log, graphical_output_sheet
     ]
     for sheet in sheets:
         sheet.clear()
@@ -221,38 +238,71 @@ def check_for_outliers(df):
     """
     Identifies outliers in a given DataFrame using the Z-Score method.
 
-    The function calculates the Z-Score for each value in the DataFrame and identifies
-    outliers as any value with an absolute Z-Score greater than 3. These outliers are
-    typically considered to be statistically significant deviations from the mean.
+    The function calculates the Z-Score for each value in the DataFrame
+    and identifies
+    outliers as any value with an absolute Z-Score greater than 3.
+    These outliers are
+    typically considered to be statistically significant deviations
+    from the mean.
 
     Args:
-    - df (pandas.DataFrame): The input DataFrame containing numerical data to check for outliers.
+    - df (pandas.DataFrame): The input DataFrame containing numerical
+    data to check for outliers.
     """
     z_scores = zscore(df)  # calculate a z score for all values in dataframe
     abs_z_scores = abs(z_scores)  # take the absolute value
     outliers = (abs_z_scores > 3).any(
-        axis=1)  # creates a bolean based on whether the absolute number is  > 3
+        axis=1)  # creates a bolean based on whether the abs number is  > 3
     return df[outliers]  # return the dataframe of the outliers identified
 
 
-def handle_log_update(update_function, data, range, log_name):
+def handle_log_update(update_function, worksheet, data,
+                      log_name="", error_log_data=None):
     """
-    Handles I/O operations with error checking and logging.
-    
+    Handles I/O operations with error checking and logging,
+    automatically appending data
+    to the end of the sheet.
+
     Args:
-    - update_function (function): Function to perform the I/O operation.
+    - update_function (function): Function to perform the I/O operation,
+    typically the update method of the worksheet.
+    - worksheet (object): Google Sheets worksheet object for log operations.
     - data (list): Data to be written or updated.
-    - range (str): Range in the sheet where the data should be written.
     - log_name (str): Name of the log for error messages.
+    - error_log_data (list, optional): List to store error messages.
+    Defaults to None.
     """
+    # Initialize error_log_data if it is None
+    if error_log_data is None:
+        error_log_data = []
+
     try:
-        update_function(data, range)
-        print(f"Successfully updated {log_name}.")
+        # Determine the last row in the log to append data
+        last_row = get_last_filled_row(worksheet)
+
+        # Determine the starting cell for new data
+        start_cell = f"A{last_row + 1}"
+
+        # Append data to the sheet using the update function
+        update_function(data, start_cell)
+        print(f"Successfully updated {log_name} at {start_cell}.")
     except Exception as e:
         print(f"Error updating {log_name}: {e}")
-        # Log error to a separate error log or notify the user
-        # For example, you can append to a global error log list if needed
         error_log_data.append([f"Error updating {log_name}: {e}"])
+
+def get_last_filled_row(worksheet):
+    """
+    Retrieves the last filled row in a Google Sheet.
+
+    Args:
+    - worksheet (object): Google Sheets worksheet object.
+
+    Returns:
+    - int: The index of the last filled row.
+    """
+    sheet_data = worksheet.get_all_values()  # Get all values from the sheet
+    return len(sheet_data)  # The last filled row index is the number of rows
+
 
 
 def validate_master_data(master_data, session_log_data, error_log_data):
@@ -291,7 +341,7 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         error_log_data (list): A list to accumulate error log entries.
     """
     # Initialise log lists
-    date_time_log_data = []  # Initialize date_time_log_data here
+    date_time__error_log_data = []  # Initialize date_time__error_log_data here
     print("\n\n >>>>> Validate Master Data <<<<<\n\n\n")
     print("\nData Validation Started       <<<<<\n\n\n")
     validated_data_df = pd.DataFrame()
@@ -404,7 +454,8 @@ def validate_master_data(master_data, session_log_data, error_log_data):
             atmos_outlier_log.update(df_to_list_of_lists(atmospheric_outliers),
                                      'A1')
             print(
-                "     Atmospheric Outliers Were Found: Check Atmos Outlier Log")
+                "     Atmospheric Outliers Were Found:"
+                " Check Atmos Outlier Log")
             print(
                 f"    \nThe link to the Atmospheric Outliers log is: \n\
                 \n{atmos_outliers_url}\n\n")
@@ -449,8 +500,9 @@ def validate_master_data(master_data, session_log_data, error_log_data):
                 '%d-%m-%YT%H:%M:%S')
         else:
             print("     Incorrect Date Formats Found\n")
-            date_time_log_data.append(['Inconsistent Date and Time Formats'])
-            date_time_log_data.append(
+            date_time__error_log_data.append(['Inconsistent Date'
+                                              ' and Time Formats'])
+            date_time__error_log_data.append(
                 inconsistent_date_format['time'].fillna('').astype(
                     str).values.tolist())
             validated_data_df = no_duplicates_df[
@@ -466,16 +518,19 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         session_log_data.append([str(pd.Timestamp.now())])
 
         # Convert all elements in logs to strings
-        session_log_data = [[str(item) for item in sublist] for sublist in
+        session_log_data = \
+            [[str(item) for item in sublist] for sublist in
                             session_log_data]
-        error_log_data = [[str(item) for item in sublist] for sublist in
+        error_log_data = \
+            [[str(item) for item in sublist] for sublist in
                           error_log_data]
-        date_time_log_data = [[str(item) for item in sublist] for sublist in
-                              date_time_log_data]
+        date_time__error_log_data = \
+            [[str(item) for item in sublist] for sublist in
+                              date_time__error_log_data]
 
         # Write all accumulated data at once
         # Log inconsistent date formats here
-        date_time_log.update(date_time_log_data, 'A1')
+        date_time__error_log.update(date_time__error_log_data, 'A1')
         print(
             f"    \nDate Inconsistancies found are written here: \n\
             \n{date_time_url}\n\n")
@@ -488,19 +543,20 @@ def validate_master_data(master_data, session_log_data, error_log_data):
     finally:
         # Convert log lists to strings and update Google Sheets
         handle_log_update(
-            session_log.update, df_to_list_of_lists(pd.DataFrame
-                                                    (session_log_data)),
-            'A1', 'session log'
-            )
+            session_log.update, session_log, 
+            df_to_list_of_lists(pd.DataFrame(session_log_data)), 
+            log_name='session log'
+        )
         handle_log_update(
-            error_log.update, df_to_list_of_lists(pd.DataFrame
-                                                (error_log_data)), 'A1',
-            'error log'
-            )
+            error_log.update, error_log, 
+            df_to_list_of_lists(pd.DataFrame(error_log_data)), 
+            log_name='error log'
+        )
         handle_log_update(
-            date_time_log.update,
-            df_to_list_of_lists(pd.DataFrame(date_time_log_data)), 'A1',
-            'date time log'
+            date_time__error_log.update, 
+            date_time__error_log,
+            df_to_list_of_lists(pd.DataFrame(date_time__error_log_data)),
+            log_name='date time log'
             )
 
 
@@ -535,10 +591,12 @@ def format_df_date(validated_df):
     validated_df['date_only'] = validated_df['time'].dt.strftime('%d-%m-%Y')
 
 
-def validate_input_dates(date_str, reference, df_first_date, df_last_date):
+def validate_input_dates(date_str, reference,
+                         df_first_date, df_last_date):
     """
     Validates an input date string to ensure it is in the correct format, 
-    represents a valid calendar date, and falls within the specified date range.
+    represents a valid calendar date, and falls within
+    the specified date range.
 
     This function performs the following tasks:
     1. Converts the input date string `date_str` to a `datetime` object.
@@ -638,7 +696,7 @@ def get_user_dates(validated_df):
     print("You will be asked to enter a start date and and end date")
     print(">>> You can type 'quit' at any time to exit. <<<\n")
 
-    # Prompt user for start date, dont go to end date until date is acceptable and formatted
+    # Prompt user for start date, until date is acceptable and formatted
     while True:
         user_input_start_date = input(
             f"Please enter the start date\n (in the format 'dd-mm-yyyy' "
@@ -702,7 +760,11 @@ def get_user_dates(validated_df):
     user_input_end_date_str = user_input_end_date.strftime('%d-%m-%Y')
 
     # Write any errors to log
-    log_errors_to_sheet(error_log_data)
+    handle_log_update(
+        error_log.update, error_log,
+        df_to_list_of_lists(pd.DataFrame(error_log_data)),
+        log_name='error log'
+        )
 
     return user_input_start_date_str, user_input_end_date_str
 
@@ -825,10 +887,10 @@ def get_data_selection():
         except ValueError as e:
             # Append error details to the error log and inform the user
             error_log_data.append(
-                ["Output Selection Error", str(pd.Timestamp.now())])
+                ["Data Set Selection Error", str(pd.Timestamp.now())])
             error_log_data.append(["You Input ", selection])
             error_log_data.append(["Error Description", str(e)])
-            print(f"Output Selection Error:\n")
+            print(f"Data Set Selection Error:\n")
             print(f"You Entered: {selection}    <<<<<\n")
             print(
                 f"Invalid data selection input.\n A detailed description "
@@ -836,7 +898,12 @@ def get_data_selection():
             print("\nPlease enter 1, 2, 3, 4, 5, 6 to exit\n")
 
         # Write any errors to log
-        log_errors_to_sheet(error_log_data)
+        handle_log_update(
+            error_log.update, error_log,
+            df_to_list_of_lists(pd.DataFrame(error_log_data)),
+            log_name='error log'
+            )
+
 
     return selected_columns
 
@@ -1295,45 +1362,17 @@ def get_valid_data_output_selection(allow_screen, allow_graph, allow_sheet):
             print("Invalid selection. Please enter a number between 1 and 4.")
 
         # Write any errors to log
-        log_errors_to_sheet(error_log_data)
+        handle_log_update(
+            error_log.update, error_log,
+            df_to_list_of_lists(pd.DataFrame(error_log_data)),
+            log_name='error log'
+            )
+
 
     return output_selection
 
 
-def log_errors_to_sheet(error_log_data):
-    """
-    Write errors to the Google Sheet, starting at cell A25 and appending 
-    subsequent errors.
 
-    Args:
-    - error_log_data : A list where each item is a tuple containing error 
-      information.
-    - error_log : The Google Sheets worksheet object where errors will 
-      be logged.
-
-    """
-    # Determine where to start appending errors
-    start_row = 4
-    existing_values = error_log.get_all_values()
-    if existing_values:
-        last_row = len(existing_values) + start_row - 1
-    else:
-        last_row = start_row - 1
-
-    # Append new errors to the sheet
-    for i, error in enumerate(error_log_data):
-        row = last_row + i + 1
-        # Ensure the tuple has at least two elements
-        error_id = error[0] if len(error) > 0 else "No ID provided"
-        error_message = error[1] if len(
-            error) > 1 else "No error message provided"
-
-        # Update columns A and B
-        error_log.update_cell(row, 1, error_id)  # Column A
-        error_log.update_cell(row, 2, error_message)  # Column B
-
-    # Clear the error_log_data list after logging
-    error_log_data = []
 
 
 def get_continue_yn():
@@ -1396,7 +1435,12 @@ def get_continue_yn():
             print("\nPlease enter (n) to exit\n")
 
         # Write any errors to log
-        log_errors_to_sheet(error_log_data)
+        handle_log_update(
+            error_log.update, error_log,
+            df_to_list_of_lists(pd.DataFrame(error_log_data)),
+            log_name='error log'
+            )
+
 
 
 def main():
@@ -1500,9 +1544,9 @@ def main():
                           error_log_data]
         print(f"The Error Log Contains:\n\n {error_log_data}")
         handle_log_update(
-            error_log.update, df_to_list_of_lists(pd.DataFrame(
-                                                error_log_data)),   'A25',
-            'error log'
-            )
+            error_log.update, error_log,
+            df_to_list_of_lists(pd.DataFrame(error_log_data)),
+            log_name='error log'
+        )
 
 main()
