@@ -305,6 +305,197 @@ def get_last_filled_row(worksheet):
     sheet_data = worksheet.get_all_values()  # Get all values from the sheet
     return len(sheet_data)  # The last filled row index is the number of rows
 
+def validate_missing_values(master_df, session_log_data, error_log_data):
+            # Validate for Missing Values
+        print("Validating missing values started       <<<<<\n")
+        session_log_data.append(['Checking For Missing Values'])
+        session_log_data.append([str(pd.Timestamp.now())])
+
+        pd.set_option('future.no_silent_downcasting', True)
+        master_df = master_df.replace(to_replace=['nan', 'NaN', ''],
+                                      value=np.nan)
+        missing_values = master_df.isnull().sum()
+        # If there are missing values, write to the session log and error log
+        if missing_values.any():
+            print("     We found rows with missing values")
+            print("     Please check the error log")
+            session_log_data.append(
+                ['We found missing values in the master data'])
+            session_log_data.append([str(pd.Timestamp.now())])
+            error_log_data.append(['Missing Values       <<<<<'])
+            # append missing values in a column
+            for column, count in missing_values.items():
+                if count > 0:
+                    error_log_data.append(
+                        [f"{column}: {count} missing values"])
+        else:
+            print("     There were no row swith missing data\n")
+            session_log_data.append(
+                ['We found no missing values in the master data'])
+
+        # Remove rows with missing values
+        if missing_values.any():
+            session_log_data.append(
+                ['Removing data with no values from master data'])
+            session_log_data.append([str(pd.Timestamp.now())])
+            missing_values_removed_df = master_df.dropna()
+            missing_values = missing_values_removed_df.isnull().sum()
+            print("     Rows with missing data have been removed\n")
+
+        print("Validating missing values completed     <<<<<\n\n\n")
+        
+        return missing_values_removed_df
+
+def validate_duplicates(missing_values_removed_df, session_log_data, error_log_data):
+    # Check for duplicate rows
+    print("Validating duplicates started       <<<<<\n")
+    duplicates_found = missing_values_removed_df.duplicated(
+        keep=False).sum()
+
+    if duplicates_found:
+        print(
+            f"     There are {duplicates_found} duplicates in the  "
+            f"working data set")
+        print("     Please check the error log")
+        session_log_data.append(
+            [f'Duplicates found in data set: {duplicates_found}'])
+        session_log_data.append([str(pd.Timestamp.now())])
+        error_log_data.append(['Duplicate Rows Found'])
+        duplicates_df = missing_values_removed_df[
+            missing_values_removed_df.duplicated(keep=False)]
+
+        # Format duplicates_df for column-wise insertion
+        duplicates_list_of_lists = duplicates_df.values.tolist()
+        # Add header for duplicates (optional)
+        duplicates_header = [duplicates_df.columns.tolist()]
+        # Combine header and data
+        formatted_duplicates = duplicates_header + duplicates_list_of_lists
+        # Append to the error log data
+        error_log_data.append(['Duplicate Rows Data'])
+        error_log_data.extend(formatted_duplicates)
+        missing_values_removed_df = missing_values_removed_df.drop_duplicates(
+            keep='first')
+        print("     Duplicates have been removed\n")
+    else:
+        print("     No duplicates found in the working data set.\n")
+        no_duplicates_df = missing_values_removed_df
+
+    print("Validating duplicates completed     <<<<<\n\n\n")
+
+    return missing_values_removed_df
+
+def validate_outliers(no_duplicates_df, session_log_data):
+    # Check for outliers
+    print("Outlier Validation Started       <<<<<\n")
+    session_log_data.append(['Outlier Validation Started'])
+    session_log_data.append([str(pd.Timestamp.now())])
+
+    numeric_df = no_duplicates_df.apply(
+        lambda col: col.map(lambda x: pd.to_numeric(x, errors='coerce')))
+
+    atmospheric_outliers = check_for_outliers(
+        numeric_df[['AtmosphericPressure']])
+    wind_outliers = check_for_outliers(numeric_df[['WindSpeed', 'Gust']])
+    wave_outliers = check_for_outliers(
+        numeric_df[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']])
+    temp_outliers = check_for_outliers(
+        numeric_df[['AirTemperature', 'SeaTemperature']])
+
+    # Update Outlier Sheets
+    if not atmospheric_outliers.empty:
+        atmos_outlier_log.update(df_to_list_of_lists(atmospheric_outliers),
+                                    'A1')
+        print(
+            "     Atmospheric Outliers Were Found:"
+            " Check Atmos Outlier Log")
+        print(
+            f"    \nThe link to the Atmospheric Outliers log is: \n\
+            \n{atmos_outliers_url}\n\n")
+    if not wind_outliers.empty:
+        wind_outlier_log.update(df_to_list_of_lists(wind_outliers), 'A1')
+        print("     Wind Outliers Were Found: Check Atmos Outlier Log")
+        print(
+            f"    \nThe link to the Wind Outliers log is:\n\n"
+            f"{wind_outliers_url}\n\n")
+    if not wave_outliers.empty:
+        wave_outlier_log.update(df_to_list_of_lists(wave_outliers), 'A1')
+        print(
+            "     Wave Outliers Were Found:        Check Wave Outlier Log")
+        print(
+            f"    \nThe link to the Wave Outliers log is:\n\n"
+            f"{wave_outliers_url}\n\n")
+    if not temp_outliers.empty:
+        temp_outlier_log.update(df_to_list_of_lists(temp_outliers), 'A1')
+        print(
+            "     Temp Outliers Were Found:        Check Temp  Outlier "
+            "Log\n")
+        print(
+            f"    \nThe link to the Temp Outliers log is:\n\n"
+            f"{temp_outliers_url}\n\n")
+
+    print("Outlier Validation Completed     <<<<<\n\n\n")
+
+
+
+def validate_date_format(master_df, session_log_data, error_log_data):
+    # Check for date inconsistencies
+    date_time_error_log_data = []
+    print("Date Validation Started       <<<<<\n")
+    session_log_data.append(['Date and Time Validation Started'])
+    session_log_data.append([str(pd.Timestamp.now())])
+    date_time_pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
+    inconsistent_date_format = master_df[
+        ~master_df['time'].str.match(date_time_pattern)]
+
+    if inconsistent_date_format.empty:
+        print("     No Incorrect Date Formats Found")
+        validated_data_df = master_df.copy()
+        validated_data_df['time'] = pd.to_datetime(
+            validated_data_df['time'], format='%Y-%m-%dT%H:%M:%SZ')
+        validated_data_df['time'] = validated_data_df['time'].dt.strftime(
+            '%d-%m-%YT%H:%M:%S')
+    else:
+        print("     Incorrect Date Formats Found\n")
+        date_time_error_log_data.append(['Inconsistent Date'
+                                            ' and Time Formats'])
+        date_time_error_log_data.append(
+            inconsistent_date_format['time'].fillna('').astype(
+                str).values.tolist())
+        validated_data_df = master_df[
+            master_df['time'].str.match(date_time_pattern)].copy()
+        validated_data_df['time'] = pd.to_datetime(
+            validated_data_df['time'], format='%Y-%m-%dT%H:%M:%SZ')
+        validated_data_df['time'] = validated_data_df['time'].dt.strftime(
+            '%d-%m-%YT%H:%M:%S')
+
+    print("     Incorrect Date Formats Removed\n")
+    # Log inconsistent date formats here
+    date_time__error_log.update(date_time_error_log_data, 'A1')
+    print(
+        f"    \nDate Inconsistancies found are written here: \n\
+        \n{date_time_url}\n\n")
+
+    return validated_data_df
+
+def update_all_logs(session_log_data, error_log_data, date_time_error_log_data):
+    # Convert log lists to strings and update Google Sheets
+    handle_log_update(
+        session_log.update, session_log,
+        df_to_list_of_lists(pd.DataFrame(session_log_data)),
+        log_name='session log'
+    )
+    handle_log_update(
+        error_log.update, error_log,
+        df_to_list_of_lists(pd.DataFrame(error_log_data)),
+        log_name='error log'
+    )
+    handle_log_update(
+        date_time__error_log.update,
+        date_time__error_log,
+        df_to_list_of_lists(pd.DataFrame(date_time_error_log_data)),
+        log_name='date time log'
+        )
+
 
 def validate_master_data(master_data, session_log_data, error_log_data):
     """
@@ -342,7 +533,7 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         error_log_data (list): A list to accumulate error log entries.
     """
     # Initialise log lists
-    date_time__error_log_data = []  # Initialize date_time__error_log_data here
+    date_time_error_log_data = []  # Initialize date_time_error_log_data here
     print("\n\n >>>>> Validate Master Data <<<<<\n\n\n")
     print("\nData Validation Started       <<<<<\n\n\n")
     validated_data_df = pd.DataFrame()
@@ -362,158 +553,16 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         session_log_data.append(['Data Validation Started <<<<<<<<<<'])
         session_log_data.append([str(pd.Timestamp.now())])
 
-        # Validate for Missing Values
-        print("Validating missing values started       <<<<<\n")
-        session_log_data.append(['Checking For Missing Values'])
-        session_log_data.append([str(pd.Timestamp.now())])
+        master_df = validate_missing_values(master_df, session_log_data, error_log_data)
 
-        pd.set_option('future.no_silent_downcasting', True)
-        master_df = master_df.replace(to_replace=['nan', 'NaN', ''],
-                                      value=np.nan)
-        missing_values = master_df.isnull().sum()
-        # If there are missing values, write to the session log and error log
-        if missing_values.any():
-            print("     We found rows with missing values")
-            print("     Please check the error log")
-            session_log_data.append(
-                ['We found missing values in the master data'])
-            session_log_data.append([str(pd.Timestamp.now())])
-            error_log_data.append(['Missing Values       <<<<<'])
-            # append missing values in a column
-            for column, count in missing_values.items():
-                if count > 0:
-                    error_log_data.append(
-                        [f"{column}: {count} missing values"])
-        else:
-            print("     There were no row swith missing data\n")
-            session_log_data.append(
-                ['We found no missing values in the master data'])
+        master_df = validate_duplicates(master_df, session_log_data, error_log_data)
 
-        # Remove rows with missing values
-        if missing_values.any():
-            session_log_data.append(
-                ['Removing data with no values from master data'])
-            session_log_data.append([str(pd.Timestamp.now())])
-            missing_values_removed_df = master_df.dropna()
-            missing_values = missing_values_removed_df.isnull().sum()
-            print("     Rows with missing data have been removed\n")
+        validate_outliers(master_df, session_log_data)
+        
+        print("OUTLIERS COMPLETED")
 
-        print("Validating missing values completed     <<<<<\n\n\n")
+        validated_data_df = validate_date_format(master_df, session_log_data, error_log_data)
 
-        # Check for duplicate rows
-        print("Validating duplicates started       <<<<<\n")
-        duplicates_found = missing_values_removed_df.duplicated(
-            keep=False).sum()
-        if duplicates_found:
-            print(
-                f"     There are {duplicates_found} duplicates in the  "
-                f"working data set")
-            print("     Please check the error log")
-            session_log_data.append(
-                [f'Duplicates found in data set: {duplicates_found}'])
-            session_log_data.append([str(pd.Timestamp.now())])
-            error_log_data.append(['Duplicate Rows Found'])
-            duplicates_df = missing_values_removed_df[
-                missing_values_removed_df.duplicated(keep=False)]
-
-            # Format duplicates_df for column-wise insertion
-            duplicates_list_of_lists = duplicates_df.values.tolist()
-            # Add header for duplicates (optional)
-            duplicates_header = [duplicates_df.columns.tolist()]
-            # Combine header and data
-            formatted_duplicates = duplicates_header + duplicates_list_of_lists
-            # Append to the error log data
-            error_log_data.append(['Duplicate Rows Data'])
-            error_log_data.extend(formatted_duplicates)
-            no_duplicates_df = missing_values_removed_df.drop_duplicates(
-                keep='first')
-            print("     Duplicates have been removed\n")
-        else:
-            print("     No duplicates found in the working data set.\n")
-            no_duplicates_df = missing_values_removed_df
-
-        print("Validating duplicates completed     <<<<<\n\n\n")
-
-        # Check for outliers
-        print("Outlier Validation Started       <<<<<\n")
-        session_log_data.append(['Outlier Validation Started'])
-        session_log_data.append([str(pd.Timestamp.now())])
-
-        numeric_df = no_duplicates_df.apply(
-            lambda col: col.map(lambda x: pd.to_numeric(x, errors='coerce')))
-
-        atmospheric_outliers = check_for_outliers(
-            numeric_df[['AtmosphericPressure']])
-        wind_outliers = check_for_outliers(numeric_df[['WindSpeed', 'Gust']])
-        wave_outliers = check_for_outliers(
-            numeric_df[['WaveHeight', 'WavePeriod', 'MeanWaveDirection']])
-        temp_outliers = check_for_outliers(
-            numeric_df[['AirTemperature', 'SeaTemperature']])
-
-        # Update Outlier Sheets
-        if not atmospheric_outliers.empty:
-            atmos_outlier_log.update(df_to_list_of_lists(atmospheric_outliers),
-                                     'A1')
-            print(
-                "     Atmospheric Outliers Were Found:"
-                " Check Atmos Outlier Log")
-            print(
-                f"    \nThe link to the Atmospheric Outliers log is: \n\
-                \n{atmos_outliers_url}\n\n")
-        if not wind_outliers.empty:
-            wind_outlier_log.update(df_to_list_of_lists(wind_outliers), 'A1')
-            print("     Wind Outliers Were Found: Check Atmos Outlier Log")
-            print(
-                f"    \nThe link to the Wind Outliers log is:\n\n"
-                f"{wind_outliers_url}\n\n")
-        if not wave_outliers.empty:
-            wave_outlier_log.update(df_to_list_of_lists(wave_outliers), 'A1')
-            print(
-                "     Wave Outliers Were Found:        Check Wave Outlier Log")
-            print(
-                f"    \nThe link to the Wave Outliers log is:\n\n"
-                f"{wave_outliers_url}\n\n")
-        if not temp_outliers.empty:
-            temp_outlier_log.update(df_to_list_of_lists(temp_outliers), 'A1')
-            print(
-                "     Temp Outliers Were Found:        Check Temp  Outlier "
-                "Log\n")
-            print(
-                f"    \nThe link to the Temp Outliers log is:\n\n"
-                f"{temp_outliers_url}\n\n")
-
-        print("Outlier Validation Completed     <<<<<\n\n\n")
-
-        # Check for date inconsistencies
-        print("Date Validation Started       <<<<<\n")
-        session_log_data.append(['Date and Time Validation Started'])
-        session_log_data.append([str(pd.Timestamp.now())])
-        date_time_pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
-        inconsistent_date_format = no_duplicates_df[
-            ~no_duplicates_df['time'].str.match(date_time_pattern)]
-
-        if inconsistent_date_format.empty:
-            print("     No Incorrect Date Formats Found")
-            validated_data_df = no_duplicates_df.copy()
-            validated_data_df['time'] = pd.to_datetime(
-                validated_data_df['time'], format='%Y-%m-%dT%H:%M:%SZ')
-            validated_data_df['time'] = validated_data_df['time'].dt.strftime(
-                '%d-%m-%YT%H:%M:%S')
-        else:
-            print("     Incorrect Date Formats Found\n")
-            date_time__error_log_data.append(['Inconsistent Date'
-                                              ' and Time Formats'])
-            date_time__error_log_data.append(
-                inconsistent_date_format['time'].fillna('').astype(
-                    str).values.tolist())
-            validated_data_df = no_duplicates_df[
-                no_duplicates_df['time'].str.match(date_time_pattern)].copy()
-            validated_data_df['time'] = pd.to_datetime(
-                validated_data_df['time'], format='%Y-%m-%dT%H:%M:%SZ')
-            validated_data_df['time'] = validated_data_df['time'].dt.strftime(
-                '%d-%m-%YT%H:%M:%S')
-
-        print("     Incorrect Date Formats Removed\n")
         print("Date Validation Completed     <<<<<\n")
         session_log_data.append(['Data Validation Ended <<<<<<<<<<'])
         session_log_data.append([str(pd.Timestamp.now())])
@@ -525,39 +574,17 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         error_log_data = \
             [[str(item) for item in sublist] for sublist in
                 error_log_data]
-        date_time__error_log_data = \
+        date_time_error_log_data = \
             [[str(item) for item in sublist] for sublist in
-                date_time__error_log_data]
-
-        # Write all accumulated data at once
-        # Log inconsistent date formats here
-        date_time__error_log.update(date_time__error_log_data, 'A1')
-        print(
-            f"    \nDate Inconsistancies found are written here: \n\
-            \n{date_time_url}\n\n")
+                date_time_error_log_data]
 
     except Exception as e:
         session_log_data.append([f"An error occurred during validation: {e}"])
         print(f"An error occurred during validation: {e}")
 
     finally:
-        # Convert log lists to strings and update Google Sheets
-        handle_log_update(
-            session_log.update, session_log,
-            df_to_list_of_lists(pd.DataFrame(session_log_data)),
-            log_name='session log'
-        )
-        handle_log_update(
-            error_log.update, error_log,
-            df_to_list_of_lists(pd.DataFrame(error_log_data)),
-            log_name='error log'
-        )
-        handle_log_update(
-            date_time__error_log.update,
-            date_time__error_log,
-            df_to_list_of_lists(pd.DataFrame(date_time__error_log_data)),
-            log_name='date time log'
-            )
+        update_all_logs(session_log_data, error_log_data, date_time_error_log_data)
+
 
     print("\n\n\n >>>>> Master Data Validation Completed <<<<<\n\n\n")
     print("Writing Validated Data To Google Sheets Started      <<<<<\n")
