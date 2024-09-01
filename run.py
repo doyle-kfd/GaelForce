@@ -305,48 +305,51 @@ def get_last_filled_row(worksheet):
     sheet_data = worksheet.get_all_values()  # Get all values from the sheet
     return len(sheet_data)  # The last filled row index is the number of rows
 
+
 def validate_missing_values(master_df, session_log_data, error_log_data):
-            # Validate for Missing Values
-        print("Validating missing values started       <<<<<\n")
-        session_log_data.append(['Checking For Missing Values'])
+    # Validate for Missing Values
+    print("Validating missing values started       <<<<<\n")
+    session_log_data.append(['Checking For Missing Values'])
+    session_log_data.append([str(pd.Timestamp.now())])
+
+    pd.set_option('future.no_silent_downcasting', True)
+    master_df = master_df.replace(to_replace=['nan', 'NaN', ''],
+                                  value=np.nan)
+    missing_values = master_df.isnull().sum()
+    # If there are missing values, write to the session log and error log
+    if missing_values.any():
+        print("     We found rows with missing values")
+        print("     Please check the error log")
+        session_log_data.append(
+            ['We found missing values in the master data'])
         session_log_data.append([str(pd.Timestamp.now())])
+        error_log_data.append(['Missing Values       <<<<<'])
+        # append missing values in a column
+        for column, count in missing_values.items():
+            if count > 0:
+                error_log_data.append(
+                    [f"{column}: {count} missing values"])
+    else:
+        print("     There were no row swith missing data\n")
+        session_log_data.append(
+            ['We found no missing values in the master data'])
 
-        pd.set_option('future.no_silent_downcasting', True)
-        master_df = master_df.replace(to_replace=['nan', 'NaN', ''],
-                                      value=np.nan)
-        missing_values = master_df.isnull().sum()
-        # If there are missing values, write to the session log and error log
-        if missing_values.any():
-            print("     We found rows with missing values")
-            print("     Please check the error log")
-            session_log_data.append(
-                ['We found missing values in the master data'])
-            session_log_data.append([str(pd.Timestamp.now())])
-            error_log_data.append(['Missing Values       <<<<<'])
-            # append missing values in a column
-            for column, count in missing_values.items():
-                if count > 0:
-                    error_log_data.append(
-                        [f"{column}: {count} missing values"])
-        else:
-            print("     There were no row swith missing data\n")
-            session_log_data.append(
-                ['We found no missing values in the master data'])
+    # Remove rows with missing values
+    if missing_values.any():
+        session_log_data.append(
+            ['Removing data with no values from master data'])
+        session_log_data.append([str(pd.Timestamp.now())])
+        missing_values_removed_df = master_df.dropna()
+        missing_values = missing_values_removed_df.isnull().sum()
+        print("     Rows with missing data have been removed\n")
 
-        # Remove rows with missing values
-        if missing_values.any():
-            session_log_data.append(
-                ['Removing data with no values from master data'])
-            session_log_data.append([str(pd.Timestamp.now())])
-            missing_values_removed_df = master_df.dropna()
-            missing_values = missing_values_removed_df.isnull().sum()
-            print("     Rows with missing data have been removed\n")
+    print("Validating missing values completed     <<<<<\n\n\n")
 
-        print("Validating missing values completed     <<<<<\n\n\n")
-        
-        return missing_values_removed_df
+    return missing_values_removed_df
 
-def validate_duplicates(missing_values_removed_df, session_log_data, error_log_data):
+
+def validate_duplicates(missing_values_removed_df, session_log_data,
+                        error_log_data):
     # Check for duplicate rows
     print("Validating duplicates started       <<<<<\n")
     duplicates_found = missing_values_removed_df.duplicated(
@@ -384,6 +387,7 @@ def validate_duplicates(missing_values_removed_df, session_log_data, error_log_d
 
     return missing_values_removed_df
 
+
 def validate_outliers(no_duplicates_df, session_log_data):
     # Check for outliers
     print("Outlier Validation Started       <<<<<\n")
@@ -403,8 +407,8 @@ def validate_outliers(no_duplicates_df, session_log_data):
 
     # Update Outlier Sheets
     if not atmospheric_outliers.empty:
-        atmos_outlier_log.update(df_to_list_of_lists(atmospheric_outliers),
-                                    'A1')
+        atmos_outlier_log.update(
+            df_to_list_of_lists(atmospheric_outliers), 'A1')
         print(
             "     Atmospheric Outliers Were Found:"
             " Check Atmos Outlier Log")
@@ -436,7 +440,6 @@ def validate_outliers(no_duplicates_df, session_log_data):
     print("Outlier Validation Completed     <<<<<\n\n\n")
 
 
-
 def validate_date_format(master_df, session_log_data, error_log_data):
     # Check for date inconsistencies
     date_time_error_log_data = []
@@ -457,7 +460,7 @@ def validate_date_format(master_df, session_log_data, error_log_data):
     else:
         print("     Incorrect Date Formats Found\n")
         date_time_error_log_data.append(['Inconsistent Date'
-                                            ' and Time Formats'])
+                                        ' and Time Formats'])
         date_time_error_log_data.append(
             inconsistent_date_format['time'].fillna('').astype(
                 str).values.tolist())
@@ -477,7 +480,9 @@ def validate_date_format(master_df, session_log_data, error_log_data):
 
     return validated_data_df
 
-def update_all_logs(session_log_data, error_log_data, date_time_error_log_data):
+
+def update_all_logs(session_log_data, error_log_data,
+                    date_time_error_log_data):
     # Convert log lists to strings and update Google Sheets
     handle_log_update(
         session_log.update, session_log,
@@ -499,38 +504,40 @@ def update_all_logs(session_log_data, error_log_data, date_time_error_log_data):
 
 def validate_master_data(master_data, session_log_data, error_log_data):
     """
-    Validates the master data for a marine data set by performing the
-    following checks:
+    Validates and cleans a marine data set through several checks
+    and updates logs accordingly.
 
-    1. **Missing Values:** Identifies and logs rows with missing values.
-       - Missing values are replaced with NaN for consistent handling.
-       - Rows containing missing data are removed after logging the issue.
+    This function performs the following validation steps:
 
-    2. **Duplicate Rows:** Detects and logs duplicate rows in the data set.
-       - Duplicates are identified and removed, and the details of these
-         rows are logged.
+    1. **Missing Values:**
+       - Identifies rows with missing values, replaces them with NaN,
+         and logs the issue.
+       - Removes rows with missing data after logging.
 
-    3. **Outliers:** Checks for outliers in specific numerical columns.
-       - Outliers are detected in columns such as AtmosphericPressure,
-         WindSpeed, WaveHeight, and temperatures.
-       - Outliers are logged in separate logs specific to each type of data
+    2. **Duplicate Rows:**
+       - Detects and logs duplicate rows.
+       - Removes duplicate rows from the data set.
+
+    3. **Outliers:**
+       - Identifies outliers in numerical columns (e.g., AtmosphericPressure,
+         WindSpeed, WaveHeight, temperatures).
+       - Logs detected outliers in separate logs for each data type
          (e.g., Atmospheric, Wind, Wave, Temp).
 
-    4. **Date Inconsistencies:** Validates the format of the date and time
-         column.
-       - Ensures that date and time values match a specified pattern
-        (ISO 8601 format).
-       - Logs any rows with inconsistent date formats and attempts
-         to correct them.
+    4. **Date Inconsistencies:**
+       - Validates and corrects the date and time format (ISO 8601)
+        in the data.
+       - Logs rows with date format issues and attempts to correct them.
 
-    The function also updates session and error logs in Google Sheets for
-    tracking the validation process.
+    The function updates session and error logs in Google Sheets to track
+    the validation process and writes the validated data to Google Sheets.
 
     Args:
-        master_data (list): The input master data set where the first row
-        contains column headers.
-        session_log_data (list): A list to accumulate session log entries.
-        error_log_data (list): A list to accumulate error log entries.
+    - master_data (list): The input data set where the first row contains
+      column headers.
+    - session_log_data (list): A list to accumulate entries for the session
+      log.
+    - error_log_data (list): A list to accumulate entries for the error log.
     """
     # Initialise log lists
     date_time_error_log_data = []  # Initialize date_time_error_log_data here
@@ -553,15 +560,18 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         session_log_data.append(['Data Validation Started <<<<<<<<<<'])
         session_log_data.append([str(pd.Timestamp.now())])
 
-        master_df = validate_missing_values(master_df, session_log_data, error_log_data)
+        master_df = validate_missing_values(master_df, session_log_data,
+                                            error_log_data)
 
-        master_df = validate_duplicates(master_df, session_log_data, error_log_data)
+        master_df = validate_duplicates(master_df, session_log_data,
+                                        error_log_data)
 
         validate_outliers(master_df, session_log_data)
-        
+
         print("OUTLIERS COMPLETED")
 
-        validated_data_df = validate_date_format(master_df, session_log_data, error_log_data)
+        validated_data_df = validate_date_format(master_df, session_log_data,
+                                                 error_log_data)
 
         print("Date Validation Completed     <<<<<\n")
         session_log_data.append(['Data Validation Ended <<<<<<<<<<'])
@@ -583,8 +593,8 @@ def validate_master_data(master_data, session_log_data, error_log_data):
         print(f"An error occurred during validation: {e}")
 
     finally:
-        update_all_logs(session_log_data, error_log_data, date_time_error_log_data)
-
+        update_all_logs(session_log_data, error_log_data,
+                        date_time_error_log_data)
 
     print("\n\n\n >>>>> Master Data Validation Completed <<<<<\n\n\n")
     print("Writing Validated Data To Google Sheets Started      <<<<<\n")
