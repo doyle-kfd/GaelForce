@@ -21,7 +21,7 @@ M2 BUOY POSITION:  53.4800°N 05.4250°W
 
 ---
 
-## Intro
+
 
 
 
@@ -29,6 +29,74 @@ M2 BUOY POSITION:  53.4800°N 05.4250°W
 
 ## The Approach I Took
 
+<details>
+<summary>Intro</summary>
+
+![PP3 Intro](docs/readme_images/pp3-intro.png)
+
+</details>
+
+<details>
+<summary>Agenda</summary>
+
+![PP3 Agenda](docs/readme_images/pp3-agenda.png)
+
+</details>
+
+<details>
+<summary>Project Introduction</summary>
+
+![PP3 Project Introduction](docs/readme_images/pp3-introduction.png)
+
+</details>
+
+<details>
+
+<summary>The Problem I Solve</summary>
+
+![PP3 Project Introduction](docs/readme_images/pp3-proboblem-i-sove.png)
+
+</details>
+
+<details>
+
+<summary>Target Audience</summary>
+
+![PP3 Target Audience](docs/readme_images/pp3-target-audience.png)
+
+</details>
+
+<details>
+
+<summary>Persona 1</summary>
+
+![PP3 Persona 1](docs/readme_images/pp3-persona.png)
+
+</details>
+
+<details>
+
+<summary>User Story - Silas The Mariner</summary>
+
+![PP3 User Story](docs/readme_images/pp3-user-story.png)
+
+</details>
+
+<details>
+
+<summary>Proposed Solution</summary>
+
+![PP3 Proposed Solution](docs/readme_images/pp3-proposed-solution.png)
+
+</details>
+
+<details>
+
+<summary>I Will Deliver</summary>
+
+![PP3 I will deliver](docs/readme_images/pp3-what-i-will-deliver.png)
+
+</details>
 
 
 ---
