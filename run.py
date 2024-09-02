@@ -1432,12 +1432,13 @@ def get_continue_yn():
     """
     error_log_data = []
     # Display app introduction
-    print("\n\nWelcome to the Weather Data Analysis Application.\n")
+    print("#######################################################")
+    print("Welcome to the Weather Data Analysis Application.\n")
     print(
         "This application has two parts:\n - Data Validation\n - "
         "Data Interrogation.\n")
+    print("#######################################################")
 
-    # Start the query loop
     # Start the query loop
     while True:
         proceed = input("Do you want to continue? (y/n): ").strip().lower()
