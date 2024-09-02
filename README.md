@@ -19,13 +19,11 @@ M2 BUOY POSITION:  53.4800°N 05.4250°W
 
 ![GaelForce](docs/readme_images/GaelForce.png)
 
----
-
-
-
-
 
 ---
+
+
+
 
 ## The Approach I Took
 
@@ -140,13 +138,38 @@ As the app creator:
 It would benefit me if I could see that the relevant session data could be output to a worksheet so I could ensure that any errors that could aid bugfixing or future enhancements could be trapped.
 
 
-
-
-
 ---
 
 ## Logic Flow
 
+The basic logic flow of the app is:
+
+- Load the data set
+    - validate the data:
+        - Check for missing data
+        - Check for duplicates
+        - Check for outliers
+        - Check for date inconsistancies
+
+- Allow user select date range
+- Allow user select data set for interrogation
+- Allow user select data output format
+
+- Data input:
+    - console
+    - master data sheet
+
+- Data output:
+    - Session log - data sheet
+    - Error log - data sheet
+    - Atmospheric outliers - data sheet
+    - Wind outliers - data sheet
+    - Temp outliers - data sheet
+    - Date-Time error log - data sheet
+    - Graphical output - data sheet - chart
+
+
+![GaelForce Logic Flow Chart](docs/readme_images/pp3-process-flow-chart.png)
 
 
 ---
