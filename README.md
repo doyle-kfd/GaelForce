@@ -103,6 +103,44 @@ M2 BUOY POSITION:  53.4800°N 05.4250°W
 
 ## User Stories
 
+As a competive sailor: 
+
+Im always looking for an edge on my competition. I spend hours pouring over weather models trying to predict what the weather will bring, during a specific event. 
+
+As a sailor, it would really benefit me:
+
+- If I could find a reliable source of weather data
+- be sure the data was clean, void of errors for my calculations
+- allow me interrogate the data based on a date range
+- allow me select the particular data im interested in:
+    - Atmospheric Pressure
+    - Wind Direction
+    - Wind Speed
+    - Wind Gusts
+    - Wave Height
+    - Wave Period
+    - Mean Wave Direction
+    - Air Temperature
+    - Sea Temperature
+    - Relative Humidity
+
+- I Also want to be able to view categorised subsets of the data:
+    - Atmospheric Pressure
+    - Wind Related Set
+    - Wave Related Set
+    - Temperature Related Set
+
+- I Want to have options, where suitable to output the resulting data set:
+    - To the console
+    - To a worksheet
+    - To a data graph
+
+As the app creator:
+
+It would benefit me if I could see that the relevant session data could be output to a worksheet so I could ensure that any errors that could aid bugfixing or future enhancements could be trapped.
+
+
+
 
 
 ---
