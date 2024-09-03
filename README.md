@@ -133,6 +133,9 @@ As a sailor, it would really benefit me:
     - To a worksheet
     - To a data graph
 
+-  I consume data in spreadsheet format
+-  I do not use fancy graphical interfaces.
+
 As the app creator:
 
 It would benefit me if I could see that the relevant session data could be output to a worksheet so I could ensure that any errors that could aid bugfixing or future enhancements could be trapped.
@@ -1767,6 +1770,9 @@ Google Charts:
 |    Intro Screen Continue Y/N       |  Entered   y      |       Please enter the start date, or Type quit        |  | 
 | Enter End Date |  Entered qwert | <img src="docs/readme_images/end-date-user-input-error.png" alt="error log" width="300"/> |      <img src="docs/readme_images/end-date-error-log.png" alt="error log" width="300"/>          |
 |   End Date            | Entered End Date Earlier Than Start Date |             <img src="docs/readme_images/end-date-before-start.png" alt="error log" width="300"/>  | <img src="docs/readme_images/end-date-before-start-log.png" alt="error log" width="300"/>  |
+| Enter Start Date |  Entered 123456 | <img src="docs/readme_images/numerical-date-errors.png" alt="error log" width="300"/> |      <img src="docs/readme_images/numerical-date-errors-log.png" alt="error log" width="300"/>          |
+| Enter quit |  Entered quit | Exiting program as requested |                |
+
 
 <br>
 <br>
@@ -1778,6 +1784,7 @@ Google Charts:
 |-----------------|-------------------|------------------------------|--------------------------------------------|
 | Data selection  | Entered qwert         | <img src="docs/readme_images/data-selection-error.png" alt="data selection error " width="300"/> |      <img src="docs/readme_images/data-selection-error-log.png" alt="data selection error " width="300"/>                  |
 | Data selection | Enter 1 - 5        | Proceed to Output Type |
+| Data selection | Enter 6            | Returns to previous menu, Date Range - Enter Start Date |
 
 
 
@@ -1791,6 +1798,7 @@ Google Charts:
 | Print To Screen | Select 1          | <img src="docs/readme_images/print-to-screen.png" alt="print to screen " width="400"/>    |
 | Create Graph | Select 2         | <img src="docs/readme_images/google-chart-output.png" alt="google chart output " width="400"/>    |
 | Write to Google sheet | Select 3         | <img src="docs/readme_images/output-to-google-sheet.png" alt="write to google sheet " width="400"/>    |
+| Exit | Select 4      | Returns to previous menu, Select the data you want to display  |
 
 
 
