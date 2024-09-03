@@ -1781,7 +1781,16 @@ Google Charts:
 
 #### Output Selection
 
+| Feature         | Test Case         | Result                 |            Result Log File                |
+|-----------------|-------------------|------------------------------|--------------------------------------------|
+| Print To Screen | Select 1          | <img src="docs/readme_images/print-to-screen.png" alt="print to screen " width="400"/>    |
+| Create Graph | Select 2         | <img src="docs/readme_images/google-chart-output.png" alt="google chart output " width="400"/>    |
+| Write to Google sheet | Select 3         | <img src="docs/readme_images/output-to-google-sheet.png" alt="write to google sheet " width="400"/>    |
 
+
+
+<br>
+<br>
 
 ---
 

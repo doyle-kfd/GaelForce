@@ -1353,7 +1353,7 @@ def determine_output_options(num_rows):
 def get_output_selection(
         user_output_df, user_data_output, selected_columns, allow_screen,
         allow_graph, allow_sheet, num_rows, SCOPED_CREDS,
-        user_data_output_url, error_log
+        user_data_output_url, error_log, graphical_output_data_url
         ):
     """
     Prompts the user to select an output option for a DataFrame and performs
@@ -1425,7 +1425,8 @@ def get_output_selection(
                 y_cols = [col for col in selected_columns if col != x_col]
                 title = 'Weather Data Over Time'
                 user_requested_graph(
-                    user_output_df, x_col, y_cols, title, SCOPED_CREDS
+                    user_output_df, x_col, y_cols, title, SCOPED_CREDS,
+                    graphical_output_data_url
                     )
             # If user selects 3 - output to google sheet
             elif output_selection == 3:
@@ -1707,7 +1708,7 @@ def delete_existing_charts(service, spreadsheet_id):
 
 def add_chart_to_sheet(
         service, spreadsheet_id, sheet_id, x_col, y_cols,
-        title
+        title, graphical_output_data_url
         ):
     """
     Add a chart to the specified Google Sheet with the legend positioned
@@ -1859,7 +1860,7 @@ def add_chart_to_sheet(
         print(f"An error occurred while creating the chart: {e}")
 
 
-def user_requested_graph(df, x_col, y_cols, title, SCOPED_CREDS):
+def user_requested_graph(df, x_col, y_cols, title, SCOPED_CREDS, graphical_output_data_url):
     """
     Writes data from a Pandas DataFrame to a specified Google Sheet and
     creates a chart.
@@ -1916,7 +1917,7 @@ def user_requested_graph(df, x_col, y_cols, title, SCOPED_CREDS):
         # Add a chart to the sheet
         add_chart_to_sheet(
             service, spreadsheet_id, sheet_id, x_col, y_cols,
-            title
+            title, graphical_output_data_url
             )
 
     except HttpError as e:
@@ -2226,7 +2227,7 @@ def main():
                     user_output_df, user_data_output, selected_columns,
                     allow_screen, allow_graph, allow_sheet,
                     num_rows, SCOPED_CREDS, user_data_output_url,
-                    error_log
+                    error_log, graphical_output_data_url
                     )
 
     # Write error log to error log sheet if there are errors to be written
