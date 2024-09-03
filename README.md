@@ -274,6 +274,8 @@ They may be able to consume all the data set or may just be interested in the Wi
     - Sheet - Worksheet
 
 - For the purpose of the deployment to heroku the ouptut to screen option is limited to data sets with less than 30 rows. The current master data set has over 32,000 so that would not create a positive user experience with it output to the screen.
+If you select a date range that has more than 30 rows output, the print to screen option is not available.
+You are just offered, 2. Create a Graph, 3. Write to Google Sheet
 
 
 
@@ -1803,6 +1805,11 @@ Google Charts:
 | Create Graph | Select 2         | <img src="docs/readme_images/google-chart-output.png" alt="google chart output " width="400"/>    |
 | Write to Google sheet | Select 3         | <img src="docs/readme_images/output-to-google-sheet.png" alt="write to google sheet " width="400"/>    |
 | Exit | Select 4      | Returns to previous menu, Select the data you want to display  |
+
+#### If you select a date range with more than 30 rows in the data set, you will not see the 1. Print to screen  option.
+
+- If you want to test this, a date range with only 24 records is 10-10-2023 - 10-10-2023
+- If you select this date range you will get the option to print to screen
 
 
 
