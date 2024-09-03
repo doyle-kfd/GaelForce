@@ -1134,7 +1134,7 @@ def get_user_dates(validated_df, error_log_data, error_log):
             error_log_data.append(["End Date Error", str(pd.Timestamp.now())])
             error_log_data.append(["End Date Error", str(e)])
             print(f"End Date Error:\n")
-            print(f"You Entered: {user_input_start_date}  <<<<<\n")
+            print(f"You Entered: {user_input_end_date}  <<<<<\n")
             print(
                 f"\n A detailed description of the error\n has been appended "
                 f"to the error log."
@@ -1246,7 +1246,7 @@ def get_data_selection(error_log):
     error_log_data = []
     while True:
         # Output Selection Options
-        print("\nSelect the data you want to display:")
+        print("\n\n\nSelect the data you want to display:")
         print("1: All Data")
         print("2: Atmospheric Pressure")
         print("3: Wind Speed and Gust")

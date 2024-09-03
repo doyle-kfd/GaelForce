@@ -1706,9 +1706,80 @@ Google Charts:
 
 ## Testing
 
-| Feature  |     Test Case | Result |
-|----------|---------------|--------|
-|   Checking Access To Google Sheets       |      Change Worksheet Name To marine_data_m2-         |    |
+### File I/O Checks
+
+| Feature               | Test Case                      | Result                                                                                                                      |
+|-----------------------|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| Checking Permission   | Changed creds directory        | Error: The specified credentials file was not found. <br> Details: [Errno 2] No such file or directory: '//./creds.json' <br> Without access to the master data the app will not run <br> Application Ending......... Bye |
+| Checking Permission   | Changed sheet name      | Error: The specified Google Sheet was not found. <br> Details: <Response [200]' <br> Without access to the master data the app will not run <br> Application Ending......... Bye |
+
+
+
+
+<br>
+
+
+### Applicatiion Start Y/N
+
+| Feature               | Test Case                      | Result  - Console                      |            Result Log File                |
+|-----------------------|--------------------------------|-----------------------------------------|------------------------------------------|
+|    Intro Screen  Continue Y/N      |  Entered     n         |        Exiting Application... Good Bye      |                                 |
+|    Intro Screen Continue Y/N       |  Entered   asdfg       |       Invalid Input. >>> asdfg <<<<         |  User Error - You Entered asdfg |   
+|    Intro Screen Continue Y/N       |  Entered   y      |       Please enter the start date, or Type quit        |  | 
+
+
+<br>
+<br>
+
+### Data Validation Process
+
+
+| Stage                 |          Console   Output               |             Log File Output     |
+|-----------------------|----------------------------------|-------------------|
+|   Loading Master Data |    Master Data Loading Start     |                   |
+|   Loading Master Data |    Master Data Loading Complete  |                   |
+|   Validating missing values started |  We found rows with missing values |
+|   Validating missing values started |  Please check the error log        |     <img src="docs/readme_images/missing-values.png" alt="console log" width="200"/> |
+|   Validating duplicates started |    <img src="docs/readme_images/validating-duplicates-console.png" alt="console log" width="200"/> | <img src="docs/readme_images/duplicate-rows.png" alt="console log" width="500"/> |
+| Atmopspheric Outlier Validation    |    Atmospheric Outliers Were Found: Check Atmos Outlier Log | <img src="docs/readme_images/atmospheric-outliers.png" alt="wind outliers" width="100"/> |
+| Wind Outlier Validation    |    Wind Outliers Were Found: Check Atmos Outlier Log | <img src="docs/readme_images/wind-outliers.png" alt="wind outliers" width="100"/> |
+| Wave Outlier Validation    |    Wave Outliers Were Found: Check Atmos Outlier Log | <img src="docs/readme_images/wave_outliers.png" alt="wave outliers" width="100"/> |
+| Temp Outlier Validation    |    Temperature Outliers Were Found: Check Atmos Outlier Log | <img src="docs/readme_images/temp-outliers.png" alt="temp outliers" width="100"/> |
+|     Date Validation        |     <img src="docs/readme_images/date-inconsistancies.png" alt="date inconsistancies" width="200"/>                            |    <img src="docs/readme_images/date-inconsistancies-log.png" alt="date inconsistancies" width="200"/>                                      |
+| Master Data Validation Completed |                              |                |               |
+
+
+<br>
+<br>
+
+
+### Date Range Selection
+
+| Feature               | Test Case                      | Result  - Console                      |            Result Log File                |
+|-----------------------|--------------------------------|-----------------------------------------|------------------------------------------|
+|    Start Date         |  Entered     asdfg             |        <img src="docs/readme_images/application-start-error-txt.png" alt="console log" width="200"/>     |        <img src="docs/readme_images/start-date-error-log-entry.png" alt="error log" width="300"/>                          |
+|    Intro Screen Continue Y/N       |  Entered   asdfg       |       Invalid Input. >>> asdfg <<<<         |  User Error - You Entered asdfg |   
+|    Intro Screen Continue Y/N       |  Entered   y      |       Please enter the start date, or Type quit        |  | 
+| Enter End Date |  Entered qwert | <img src="docs/readme_images/end-date-user-input-error.png" alt="error log" width="300"/> |      <img src="docs/readme_images/end-date-error-log.png" alt="error log" width="300"/>          |
+|   End Date            | Entered End Date Earlier Than Start Date |             <img src="docs/readme_images/end-date-before-start.png" alt="error log" width="300"/>  | <img src="docs/readme_images/end-date-before-start-log.png" alt="error log" width="300"/>  |
+
+<br>
+<br>
+
+#### Data Selection 
+
+
+| Feature         | Test Case         | Result  - Console            |            Result Log File                |
+|-----------------|-------------------|------------------------------|--------------------------------------------|
+| Data selection  | Entered qwert         | <img src="docs/readme_images/data-selection-error.png" alt="data selection error " width="300"/> |      <img src="docs/readme_images/data-selection-error-log.png" alt="data selection error " width="300"/>                  |
+| Data selection | Enter 1 - 5        | Proceed to Output Type |
+
+
+
+<br>
+<br>
+
+#### Output Selection
 
 
 
