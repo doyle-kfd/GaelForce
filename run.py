@@ -1860,7 +1860,8 @@ def add_chart_to_sheet(
         print(f"An error occurred while creating the chart: {e}")
 
 
-def user_requested_graph(df, x_col, y_cols, title, SCOPED_CREDS, graphical_output_data_url):
+def user_requested_graph(df, x_col, y_cols, title,
+                         SCOPED_CREDS, graphical_output_data_url):
     """
     Writes data from a Pandas DataFrame to a specified Google Sheet and
     creates a chart.

@@ -178,7 +178,7 @@ The basic logic flow of the app is:
 
 ## Functional Flow Chart
 
-![GaelForce Process Flow Chart](docs/readme_images/functional-flow-chart.png)
+![GaelForce Functional Flow Chart](docs/readme_images/functional-flowchart.png)
 
 ---
 
