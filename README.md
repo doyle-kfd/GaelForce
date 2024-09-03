@@ -169,8 +169,13 @@ The basic logic flow of the app is:
     - Graphical output - data sheet - chart
 
 
-![GaelForce Logic Flow Chart](docs/readme_images/pp3-process-flow-chart.png)
+![GaelForce Process Flow Chart](docs/readme_images/pp3-process-flow-chart.png)
 
+<br>
+
+## Functional Flow Chart
+
+![GaelForce Process Flow Chart](docs/readme_images/functional-flow-chart.png)
 
 ---
 
