@@ -1714,6 +1714,8 @@ Google Charts:
 
 ## Testing
 
+#### As Errors are trapped, they will be written to the error log file. This may happen immediately or could be batch written, when you progress to the next menu. This method of batch log updates is due to restrictions Google imposes on reads and write limits. Its not ideal, however it does facilitate logging.
+
 ### File I/O Checks
 
 | Feature               | Test Case                      | Result                                                                                                                      |
@@ -1770,8 +1772,10 @@ Google Charts:
 |    Intro Screen Continue Y/N       |  Entered   y      |       Please enter the start date, or Type quit        |  | 
 | Enter End Date |  Entered qwert | <img src="docs/readme_images/end-date-user-input-error.png" alt="error log" width="300"/> |      <img src="docs/readme_images/end-date-error-log.png" alt="error log" width="300"/>          |
 |   End Date            | Entered End Date Earlier Than Start Date |             <img src="docs/readme_images/end-date-before-start.png" alt="error log" width="300"/>  | <img src="docs/readme_images/end-date-before-start-log.png" alt="error log" width="300"/>  |
-| Enter Start Date |  Entered 123456 | <img src="docs/readme_images/numerical-date-errors.png" alt="error log" width="300"/> |      <img src="docs/readme_images/numerical-date-errors-log.png" alt="error log" width="300"/>          |
+| Enter Start Date |  Entered 123456 | <img src="docs/readme_images/date-lowerthan-daterange.png" alt="error log" width="300"/> |      <img src="docs/readme_images/date-lowerthan-daterange-log.png" alt="error log" width="300"/>          |
+| Enter 10-10-1968 | 
 | Enter quit |  Entered quit | Exiting program as requested |                |
+
 
 
 <br>
